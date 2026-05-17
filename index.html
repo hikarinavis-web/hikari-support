@@ -9,7 +9,7 @@
 <style>
 
 body{
-    font-family: sans-serif;
+    font-family:sans-serif;
     background:#f5f5f5;
     margin:0;
     padding:20px;
@@ -34,7 +34,7 @@ h1{
     margin-bottom:15px;
 }
 
-input, select, textarea{
+input, select{
     width:100%;
     padding:14px;
     border:1px solid #ccc;
@@ -119,10 +119,6 @@ th{
     background:#16a34a;
 }
 
-.search-box{
-    margin-bottom:20px;
-}
-
 .memo-box{
     white-space:pre-wrap;
     font-size:14px;
@@ -135,6 +131,10 @@ a{
 
 a:hover{
     text-decoration:underline;
+}
+
+.search-box{
+    margin-top:15px;
 }
 
 </style>
@@ -190,6 +190,7 @@ CSV出力
 <table>
 
 <thead>
+
 <tr>
 
 <th>名前</th>
@@ -209,6 +210,7 @@ CSV出力
 <th>操作</th>
 
 </tr>
+
 </thead>
 
 <tbody id="customerTable"></tbody>
@@ -219,7 +221,11 @@ CSV出力
 
 <script>
 
-let customers = [];
+let customers = JSON.parse(localStorage.getItem("customers")) || [];
+
+function saveCustomers(){
+    localStorage.setItem("customers", JSON.stringify(customers));
+}
 
 document.getElementById("search").addEventListener("input", renderTable);
 
@@ -249,7 +255,6 @@ function checkNuro(zipcode, address){
 
     const zip = zipcode.replace(/[^0-9]/g, "");
 
-    // 提供中エリア
     if(
         zip === "0640805" ||
         address.includes("札幌市中央区南5条西8丁目")
@@ -257,7 +262,6 @@ function checkNuro(zipcode, address){
         return "提供中";
     }
 
-    // 未提供
     if(
         address.includes("札幌市東区北48") ||
         address.includes("札幌市東区北四十八")
@@ -360,6 +364,8 @@ function addCustomer(){
 
     customers.push(customer);
 
+    saveCustomers();
+
     renderTable();
 
     document.getElementById("name").value = "";
@@ -415,19 +421,27 @@ function renderTable(){
         </td>
 
         <td class="memo-box">
+
         ${c.memo}
+
         <br><br>
+
         <button class="memo-btn" onclick="editMemo(${index})">
         編集
         </button>
+
         </td>
 
         <td class="memo-box">
+
         ${c.call}
+
         <br><br>
+
         <button class="call-btn" onclick="editCall(${index})">
         編集
         </button>
+
         </td>
 
         <td>
@@ -472,6 +486,8 @@ function deleteCustomer(index){
 
         customers.splice(index,1);
 
+        saveCustomers();
+
         renderTable();
     }
 }
@@ -484,6 +500,8 @@ function editMemo(index){
 
         customers[index].memo = memo;
 
+        saveCustomers();
+
         renderTable();
     }
 }
@@ -495,6 +513,8 @@ function editCall(index){
     if(call !== null){
 
         customers[index].call = call;
+
+        saveCustomers();
 
         renderTable();
     }
@@ -522,6 +542,8 @@ function downloadCSV(){
 
     a.click();
 }
+
+renderTable();
 
 </script>
 
