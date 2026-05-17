@@ -29,26 +29,26 @@ h1{
 
 .grid{
     display:grid;
-    grid-template-columns:1fr 1fr 1fr 1fr;
+    grid-template-columns:repeat(4,1fr);
     gap:15px;
     margin-bottom:15px;
 }
 
 input, select{
     width:100%;
-    padding:14px;
+    padding:12px;
     border:1px solid #ccc;
     border-radius:8px;
-    font-size:16px;
+    font-size:15px;
     box-sizing:border-box;
 }
 
 button{
-    padding:12px 18px;
+    padding:10px 16px;
     border:none;
     border-radius:8px;
     cursor:pointer;
-    font-size:16px;
+    font-size:15px;
 }
 
 .add-btn{
@@ -59,7 +59,11 @@ button{
 .csv-btn{
     background:#16a34a;
     color:white;
-    margin-left:10px;
+}
+
+.import-btn{
+    background:#9333ea;
+    color:white;
 }
 
 .delete-btn{
@@ -68,11 +72,6 @@ button{
 }
 
 .memo-btn{
-    background:#9333ea;
-    color:white;
-}
-
-.call-btn{
     background:#f59e0b;
     color:white;
 }
@@ -80,13 +79,14 @@ button{
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:20px;
     background:white;
+    margin-top:20px;
 }
 
 th, td{
     border:1px solid #ddd;
-    padding:12px;
+    padding:10px;
+    font-size:14px;
     text-align:left;
     vertical-align:top;
 }
@@ -101,6 +101,21 @@ th{
     color:white;
     font-weight:bold;
     display:inline-block;
+}
+
+.rankA{
+    background:#16a34a;
+    color:white;
+}
+
+.rankB{
+    background:#f59e0b;
+    color:white;
+}
+
+.rankC{
+    background:#ef4444;
+    color:white;
 }
 
 .status-wait{
@@ -119,9 +134,10 @@ th{
     background:#16a34a;
 }
 
-.memo-box{
-    white-space:pre-wrap;
-    font-size:14px;
+.summary{
+    font-size:18px;
+    font-weight:bold;
+    margin-bottom:10px;
 }
 
 a{
@@ -131,10 +147,6 @@ a{
 
 a:hover{
     text-decoration:underline;
-}
-
-.search-box{
-    margin-top:15px;
 }
 
 </style>
@@ -151,16 +163,11 @@ a:hover{
 <div class="grid">
 
 <input id="name" placeholder="名前">
-
 <input id="phone" placeholder="電話番号">
-
 <input id="zipcode" placeholder="郵便番号">
-
 <input id="address" placeholder="住所">
 
-</div>
-
-<div class="grid">
+<input id="staff" placeholder="担当者名">
 
 <select id="status">
 <option>未対応</option>
@@ -169,7 +176,16 @@ a:hover{
 <option>成約</option>
 </select>
 
-<input id="search" placeholder="顧客検索">
+<select id="rank">
+<option>A</option>
+<option>B</option>
+<option>C</option>
+</select>
+
+<input id="productMemo" placeholder="商材別メモ">
+
+<input id="lastContactDate" type="date">
+<input id="nextContactDate" type="date">
 
 </div>
 
@@ -181,11 +197,21 @@ a:hover{
 CSV出力
 </button>
 
+<button class="import-btn" onclick="document.getElementById('csvFile').click()">
+CSVインポート
+</button>
+
+<input type="file" id="csvFile" accept=".csv" style="display:none">
+
 </div>
 
 <div class="card">
 
-<h2>顧客リスト</h2>
+<div class="summary" id="monthlySummary">
+今月成約数：0件
+</div>
+
+<input id="search" placeholder="検索" style="width:300px;padding:10px;">
 
 <table>
 
@@ -198,13 +224,16 @@ CSV出力
 <th>郵便番号</th>
 <th>推定キャリア</th>
 <th>住所</th>
-<th>NTT回線</th>
-<th>NURO光</th>
+<th>担当者</th>
+<th>NTT</th>
+<th>NURO</th>
 <th>NURO種別</th>
 <th>提案候補</th>
 <th>対応状況</th>
-<th>LINEメモ</th>
-<th>架電履歴</th>
+<th>ランク</th>
+<th>最終対応日</th>
+<th>次回連絡日</th>
+<th>商材メモ</th>
 <th>公式確認</th>
 <th>地図</th>
 <th>操作</th>
@@ -221,17 +250,26 @@ CSV出力
 
 <script>
 
-let customers = JSON.parse(localStorage.getItem("customers")) || [];
+let customers =
+JSON.parse(localStorage.getItem("customers")) || [];
 
 function saveCustomers(){
-    localStorage.setItem("customers", JSON.stringify(customers));
+
+    localStorage.setItem(
+        "customers",
+        JSON.stringify(customers)
+    );
 }
 
-document.getElementById("search").addEventListener("input", renderTable);
+document.getElementById("search")
+.addEventListener("input", renderTable);
 
 function detectCarrier(phone){
 
-    if(phone.startsWith("090") || phone.startsWith("080")){
+    if(
+        phone.startsWith("090") ||
+        phone.startsWith("080")
+    ){
         return "大手キャリア系";
     }
 
@@ -251,9 +289,10 @@ function checkNTT(address){
     return "要確認";
 }
 
-function checkNuro(zipcode, address){
+function checkNuro(zipcode,address){
 
-    const zip = zipcode.replace(/[^0-9]/g, "");
+    const zip =
+    zipcode.replace(/[^0-9]/g,"");
 
     if(
         zip === "0640805" ||
@@ -263,33 +302,27 @@ function checkNuro(zipcode, address){
     }
 
     if(
-        address.includes("札幌市東区北48") ||
-        address.includes("札幌市東区北四十八")
+        address.includes("札幌市東区北48")
     ){
         return "未提供";
-    }
-
-    if(address.includes("北海道")){
-        return "要公式確認";
     }
 
     return "要確認";
 }
 
-function detectNuroType(zipcode, address){
+function detectNuroType(zipcode,address){
 
-    const zip = zipcode.replace(/[^0-9]/g, "");
+    const zip =
+    zipcode.replace(/[^0-9]/g,"");
 
     if(
-        zip === "0640805" ||
-        address.includes("札幌市中央区南5条西8丁目")
+        zip === "0640805"
     ){
         return "2G / 10G提供中";
     }
 
     if(
-        address.includes("札幌市東区北48") ||
-        address.includes("札幌市東区北四十八")
+        address.includes("札幌市東区北48")
     ){
         return "2G/10G未提供";
     }
@@ -300,95 +333,127 @@ function detectNuroType(zipcode, address){
 function suggestPlan(nuro){
 
     if(nuro === "提供中"){
-        return "NURO優先提案";
+        return "NURO優先";
     }
 
     if(nuro === "未提供"){
-        return "フレッツ/光コラボ提案";
+        return "フレッツ提案";
     }
 
     return "ヒアリング優先";
 }
 
-function getStatusClass(status){
-
-    if(status === "未対応"){
-        return "status status-wait";
-    }
-
-    if(status === "LINE対応中"){
-        return "status status-line";
-    }
-
-    if(status === "架電予定"){
-        return "status status-call";
-    }
-
-    if(status === "成約"){
-        return "status status-close";
-    }
-
-    return "status";
-}
-
 function addCustomer(){
 
-    const name = document.getElementById("name").value;
-    const phone = document.getElementById("phone").value;
-    const zipcode = document.getElementById("zipcode").value;
-    const address = document.getElementById("address").value;
-    const status = document.getElementById("status").value;
+    const name =
+    document.getElementById("name").value;
 
-    const carrier = detectCarrier(phone);
-    const ntt = checkNTT(address);
-    const nuro = checkNuro(zipcode, address);
-    const nuroType = detectNuroType(zipcode, address);
-    const suggest = suggestPlan(nuro);
+    const phone =
+    document.getElementById("phone").value;
 
-    const customer = {
+    const zipcode =
+    document.getElementById("zipcode").value;
+
+    const address =
+    document.getElementById("address").value;
+
+    const staff =
+    document.getElementById("staff").value;
+
+    const status =
+    document.getElementById("status").value;
+
+    const rank =
+    document.getElementById("rank").value;
+
+    const productMemo =
+    document.getElementById("productMemo").value;
+
+    const lastContactDate =
+    document.getElementById("lastContactDate").value;
+
+    const nextContactDate =
+    document.getElementById("nextContactDate").value;
+
+    const carrier =
+    detectCarrier(phone);
+
+    const ntt =
+    checkNTT(address);
+
+    const nuro =
+    checkNuro(zipcode,address);
+
+    const nuroType =
+    detectNuroType(zipcode,address);
+
+    const suggest =
+    suggestPlan(nuro);
+
+    customers.push({
 
         name,
         phone,
         zipcode,
         carrier,
         address,
+        staff,
         ntt,
         nuro,
         nuroType,
         suggest,
         status,
-        memo:"",
-        call:""
+        rank,
+        productMemo,
+        lastContactDate,
+        nextContactDate
 
-    };
-
-    customers.push(customer);
+    });
 
     saveCustomers();
 
     renderTable();
 
-    document.getElementById("name").value = "";
-    document.getElementById("phone").value = "";
-    document.getElementById("zipcode").value = "";
-    document.getElementById("address").value = "";
+    clearInputs();
+}
+
+function clearInputs(){
+
+    document.querySelectorAll("input")
+    .forEach(input=>{
+
+        if(input.type !== "file"){
+            input.value = "";
+        }
+
+    });
 }
 
 function renderTable(){
 
-    const keyword = document.getElementById("search").value;
+    const keyword =
+    document.getElementById("search").value;
 
-    const table = document.getElementById("customerTable");
+    const table =
+    document.getElementById("customerTable");
 
     table.innerHTML = "";
 
+    let monthlyClose = 0;
+
     customers
-    .filter(c =>
+    .filter(c=>
+
         c.name.includes(keyword) ||
         c.phone.includes(keyword) ||
         c.address.includes(keyword)
+
     )
     .forEach((c,index)=>{
+
+        if(c.status === "成約"){
+            monthlyClose++;
+        }
 
         table.innerHTML += `
 
@@ -404,6 +469,8 @@ function renderTable(){
 
         <td>${c.address}</td>
 
+        <td>${c.staff}</td>
+
         <td>${c.ntt}</td>
 
         <td>${c.nuro}</td>
@@ -413,36 +480,22 @@ function renderTable(){
         <td>${c.suggest}</td>
 
         <td>
-
-        <div class="${getStatusClass(c.status)}">
+        <span class="status ${getStatusClass(c.status)}">
         ${c.status}
-        </div>
-
+        </span>
         </td>
 
-        <td class="memo-box">
-
-        ${c.memo}
-
-        <br><br>
-
-        <button class="memo-btn" onclick="editMemo(${index})">
-        編集
-        </button>
-
+        <td>
+        <span class="${getRankClass(c.rank)}">
+        ${c.rank}
+        </span>
         </td>
 
-        <td class="memo-box">
+        <td>${c.lastContactDate}</td>
 
-        ${c.call}
+        <td>${c.nextContactDate}</td>
 
-        <br><br>
-
-        <button class="call-btn" onclick="editCall(${index})">
-        編集
-        </button>
-
-        </td>
+        <td>${c.productMemo}</td>
 
         <td>
 
@@ -468,8 +521,11 @@ function renderTable(){
 
         <td>
 
-        <button class="delete-btn" onclick="deleteCustomer(${index})">
+        <button class="delete-btn"
+        onclick="deleteCustomer(${index})">
+
         削除
+
         </button>
 
         </td>
@@ -478,6 +534,44 @@ function renderTable(){
 
         `;
     });
+
+    document.getElementById("monthlySummary")
+    .innerText =
+    "今月成約数：" + monthlyClose + "件";
+}
+
+function getStatusClass(status){
+
+    if(status === "未対応"){
+        return "status-wait";
+    }
+
+    if(status === "LINE対応中"){
+        return "status-line";
+    }
+
+    if(status === "架電予定"){
+        return "status-call";
+    }
+
+    if(status === "成約"){
+        return "status-close";
+    }
+
+    return "";
+}
+
+function getRankClass(rank){
+
+    if(rank === "A"){
+        return "status rankA";
+    }
+
+    if(rank === "B"){
+        return "status rankB";
+    }
+
+    return "status rankC";
 }
 
 function deleteCustomer(index){
@@ -492,49 +586,26 @@ function deleteCustomer(index){
     }
 }
 
-function editMemo(index){
-
-    const memo = prompt("LINEメモ入力", customers[index].memo);
-
-    if(memo !== null){
-
-        customers[index].memo = memo;
-
-        saveCustomers();
-
-        renderTable();
-    }
-}
-
-function editCall(index){
-
-    const call = prompt("架電履歴入力", customers[index].call);
-
-    if(call !== null){
-
-        customers[index].call = call;
-
-        saveCustomers();
-
-        renderTable();
-    }
-}
-
 function downloadCSV(){
 
-    let csv = "名前,電話番号,郵便番号,キャリア,住所,NTT,NURO,NURO種別,提案候補,対応状況\n";
+    let csv =
+    "名前,電話番号,郵便番号,キャリア,住所,担当者,NTT,NURO,NURO種別,提案候補,対応状況,ランク,最終対応日,次回連絡日,商材メモ\n";
 
     customers.forEach(c=>{
 
-        csv += `${c.name},${c.phone},${c.zipcode},${c.carrier},${c.address},${c.ntt},${c.nuro},${c.nuroType},${c.suggest},${c.status}\n`;
+        csv +=
+`${c.name},${c.phone},${c.zipcode},${c.carrier},${c.address},${c.staff},${c.ntt},${c.nuro},${c.nuroType},${c.suggest},${c.status},${c.rank},${c.lastContactDate},${c.nextContactDate},${c.productMemo}\n`;
 
     });
 
-    const blob = new Blob([csv], {type:"text/csv"});
+    const blob =
+    new Blob([csv],{type:"text/csv"});
 
-    const url = URL.createObjectURL(blob);
+    const url =
+    URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
+    const a =
+    document.createElement("a");
 
     a.href = url;
 
@@ -542,6 +613,60 @@ function downloadCSV(){
 
     a.click();
 }
+
+document.getElementById("csvFile")
+.addEventListener("change", function(e){
+
+    const file = e.target.files[0];
+
+    if(!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(event){
+
+        const text = event.target.result;
+
+        const rows = text.split("\n");
+
+        rows.slice(1).forEach(row=>{
+
+            const cols = row.split(",");
+
+            if(cols.length > 5){
+
+                customers.push({
+
+                    name: cols[0] || "",
+                    phone: cols[1] || "",
+                    zipcode: cols[2] || "",
+                    carrier: cols[3] || "",
+                    address: cols[4] || "",
+                    staff: cols[5] || "",
+                    ntt: cols[6] || "",
+                    nuro: cols[7] || "",
+                    nuroType: cols[8] || "",
+                    suggest: cols[9] || "",
+                    status: cols[10] || "",
+                    rank: cols[11] || "",
+                    lastContactDate: cols[12] || "",
+                    nextContactDate: cols[13] || "",
+                    productMemo: cols[14] || ""
+
+                });
+
+            }
+
+        });
+
+        saveCustomers();
+
+        renderTable();
+    };
+
+    reader.readAsText(file);
+
+});
 
 renderTable();
 
