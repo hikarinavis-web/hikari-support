@@ -3,62 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>提供エリア確認ツール</title>
+
+<title>光回線 顧客管理＋提供エリア確認ツール</title>
 
 <style>
-body{font-family:sans-serif;background:#f5f5f5;margin:0;padding:20px;}
-.card{background:white;padding:20px;border-radius:12px;margin-bottom:20px;}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
-input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;}
-button{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;margin:4px;}
-.biglobe{background:#0070f3;color:white;}
-.nuro{background:#16a34a;color:white;}
-.save{background:#9333ea;color:white;}
-iframe{width:100%;height:650px;border:1px solid #ccc;border-radius:12px;background:white;}
-table{width:100%;border-collapse:collapse;background:white;}
-th,td{border:1px solid #ddd;padding:8px;font-size:14px;}
-th{background:#eee;}
+
+body{
+    font-family:sans-serif;
+    background:#f5f5f5;
+    margin:0;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:12px;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    box-sizing:border-box;
+}
+
+button{
+    padding:10px 16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin:4px;
+}
+
+.add-btn{
+    background:#0070f3;
+    color:white;
+}
+
+.biglobe-btn{
+    background:#2563eb;
+    color:white;
+}
+
+.nuro-btn{
+    background:#16a34a;
+    color:white;
+}
+
+.save-btn{
+    background:#9333ea;
+    color:white;
+}
+
+.delete-btn{
+    background:#ef4444;
+    color:white;
+}
+
+.status{
+    padding:6px 12px;
+    border-radius:20px;
+    color:white;
+    font-weight:bold;
+    display:inline-block;
+}
+
+.status-wait{
+    background:#6b7280;
+}
+
+.status-line{
+    background:#3b82f6;
+}
+
+.status-call{
+    background:#f59e0b;
+}
+
+.status-close{
+    background:#16a34a;
+}
+
+.rankA{
+    background:#16a34a;
+}
+
+.rankB{
+    background:#f59e0b;
+}
+
+.rankC{
+    background:#ef4444;
+}
+
+iframe{
+    width:100%;
+    height:650px;
+    border:1px solid #ccc;
+    border-radius:12px;
+    background:white;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    font-size:13px;
+    text-align:left;
+}
+
+th{
+    background:#eee;
+}
+
+a{
+    color:#2563eb;
+    text-decoration:none;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>提供エリア確認ツール</h1>
+<h1>光回線 顧客管理＋提供エリア確認ツール</h1>
 
 <div class="card">
-<h2>顧客情報</h2>
+
+<h2>顧客登録</h2>
 
 <div class="grid">
+
 <input id="name" placeholder="名前">
+
 <input id="phone" placeholder="電話番号">
+
 <input id="zipcode" placeholder="郵便番号">
+
 <input id="address" placeholder="住所">
-</div>
 
-<button class="biglobe" onclick="openBiglobe()">BIGLOBE確認を画面内で開く</button>
-<button class="nuro" onclick="openNuro()">NURO確認を画面内で開く</button>
+<input id="staff" placeholder="担当者名">
 
-<a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/1" target="_blank">
-<button>BIGLOBEを別タブで開く</button>
-</a>
+<select id="status">
+<option>未対応</option>
+<option>LINE対応中</option>
+<option>架電予定</option>
+<option>成約</option>
+</select>
 
-<a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">
-<button>NUROを別タブで開く</button>
-</a>
+<select id="rank">
+<option>A</option>
+<option>B</option>
+<option>C</option>
+</select>
 
-</div>
+<input id="productMemo" placeholder="商材別メモ">
 
-<div class="card">
-<h2>公式確認画面</h2>
-<p>※公式サイト側が埋め込みを禁止している場合、この枠内には表示されません。その場合は「別タブで開く」を使ってください。</p>
+<input id="lastContactDate" type="date">
 
-<iframe id="officialFrame" src=""></iframe>
-</div>
+<input id="nextContactDate" type="date">
 
-<div class="card">
-<h2>確認結果を保存</h2>
-
-<div class="grid">
 <select id="biglobe1g">
 <option>要確認</option>
 <option>提供中</option>
@@ -84,129 +204,340 @@ th{background:#eee;}
 </select>
 
 <input id="checkDate" type="date">
-<input id="memo" placeholder="メモ">
+
+<input id="memo" placeholder="確認メモ">
+
 </div>
 
-<button class="save" onclick="saveAreaResult()">判定DBに保存</button>
+<button class="add-btn" onclick="saveCustomer()">
+顧客保存
+</button>
+
+<button class="save-btn" onclick="saveAreaDB()">
+判定DB保存
+</button>
+
 </div>
 
 <div class="card">
-<h2>判定DB一覧</h2>
+
+<h2>提供エリア確認</h2>
+
+<button class="biglobe-btn" onclick="openBiglobe()">
+BIGLOBE確認を画面内で開く
+</button>
+
+<button class="nuro-btn" onclick="openNuro()">
+NURO確認を画面内で開く
+</button>
+
+<a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/init?hikariarea=top" target="_blank">
+<button>
+BIGLOBEを別タブで開く
+</button>
+</a>
+
+<a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">
+<button>
+NUROを別タブで開く
+</button>
+</a>
+
+<p>
+※ iframe表示できない場合は、公式サイト側の制限です。<br>
+その場合は別タブ版をご利用ください。
+</p>
+
+<iframe id="officialFrame"></iframe>
+
+</div>
+
+<div class="card">
+
+<h2>顧客一覧</h2>
 
 <table>
+
 <thead>
+
 <tr>
+
 <th>名前</th>
 <th>電話番号</th>
 <th>郵便番号</th>
 <th>住所</th>
+<th>担当者</th>
+
 <th>BIGLOBE 1G</th>
 <th>BIGLOBE 10G</th>
+
 <th>NURO 2G</th>
 <th>NURO 10G</th>
+
+<th>対応状況</th>
+<th>ランク</th>
+
+<th>最終対応日</th>
+<th>次回連絡日</th>
+
+<th>商材メモ</th>
 <th>確認日</th>
-<th>メモ</th>
+
+<th>確認メモ</th>
+
 <th>操作</th>
+
 </tr>
+
 </thead>
-<tbody id="areaTable"></tbody>
+
+<tbody id="customerTable"></tbody>
+
 </table>
+
 </div>
 
 <script>
-let areaDB = JSON.parse(localStorage.getItem("areaDB")) || [];
+
+let customers =
+JSON.parse(localStorage.getItem("customers")) || [];
+
+function saveStorage(){
+
+    localStorage.setItem(
+        "customers",
+        JSON.stringify(customers)
+    );
+}
 
 function openBiglobe(){
-  document.getElementById("officialFrame").src =
-    "https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/1";
+
+    document.getElementById("officialFrame").src =
+    "https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/init?hikariarea=top";
 }
 
 function openNuro(){
-  document.getElementById("officialFrame").src =
+
+    document.getElementById("officialFrame").src =
     "https://nuro.jp/area/area_search/index_a.html";
 }
 
-function cleanZip(zip){
-  return String(zip || "").replace(/[^0-9]/g,"");
+function saveCustomer(){
+
+    const data = {
+
+        name:
+        document.getElementById("name").value,
+
+        phone:
+        document.getElementById("phone").value,
+
+        zipcode:
+        document.getElementById("zipcode").value,
+
+        address:
+        document.getElementById("address").value,
+
+        staff:
+        document.getElementById("staff").value,
+
+        status:
+        document.getElementById("status").value,
+
+        rank:
+        document.getElementById("rank").value,
+
+        productMemo:
+        document.getElementById("productMemo").value,
+
+        lastContactDate:
+        document.getElementById("lastContactDate").value,
+
+        nextContactDate:
+        document.getElementById("nextContactDate").value,
+
+        biglobe1g:
+        document.getElementById("biglobe1g").value,
+
+        biglobe10g:
+        document.getElementById("biglobe10g").value,
+
+        nuro2g:
+        document.getElementById("nuro2g").value,
+
+        nuro10g:
+        document.getElementById("nuro10g").value,
+
+        checkDate:
+        document.getElementById("checkDate").value,
+
+        memo:
+        document.getElementById("memo").value
+
+    };
+
+    customers.push(data);
+
+    saveStorage();
+
+    renderTable();
+
+    clearInputs();
 }
 
-function saveAreaResult(){
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
-  const zipcode = cleanZip(document.getElementById("zipcode").value);
-  const address = document.getElementById("address").value;
+function saveAreaDB(){
 
-  const biglobe1g = document.getElementById("biglobe1g").value;
-  const biglobe10g = document.getElementById("biglobe10g").value;
-  const nuro2g = document.getElementById("nuro2g").value;
-  const nuro10g = document.getElementById("nuro10g").value;
-  const checkDate = document.getElementById("checkDate").value;
-  const memo = document.getElementById("memo").value;
+    const zipcode =
+    document.getElementById("zipcode").value;
 
-  if(!zipcode){
-    alert("郵便番号を入力してください");
-    return;
-  }
+    if(!zipcode){
 
-  const data = {
-    name,
-    phone,
-    zipcode,
-    address,
-    biglobe1g,
-    biglobe10g,
-    nuro2g,
-    nuro10g,
-    checkDate,
-    memo
-  };
+        alert("郵便番号を入力してください");
 
-  const index = areaDB.findIndex(item => item.zipcode === zipcode);
+        return;
+    }
 
-  if(index >= 0){
-    areaDB[index] = data;
-  }else{
-    areaDB.push(data);
-  }
+    const existing =
+    customers.find(
+        c => c.zipcode === zipcode
+    );
 
-  localStorage.setItem("areaDB", JSON.stringify(areaDB));
-  renderAreaDB();
+    if(existing){
 
-  alert("判定DBに保存しました");
+        alert("同じ郵便番号が既にあります");
+    }else{
+
+        saveCustomer();
+    }
 }
 
-function renderAreaDB(){
-  const tbody = document.getElementById("areaTable");
-  tbody.innerHTML = "";
+function clearInputs(){
 
-  areaDB.forEach((item,index)=>{
-    tbody.innerHTML += `
-      <tr>
-        <td>${item.name || ""}</td>
-        <td>${item.phone || ""}</td>
-        <td>${item.zipcode || ""}</td>
-        <td>${item.address || ""}</td>
-        <td>${item.biglobe1g || ""}</td>
-        <td>${item.biglobe10g || ""}</td>
-        <td>${item.nuro2g || ""}</td>
-        <td>${item.nuro10g || ""}</td>
-        <td>${item.checkDate || ""}</td>
-        <td>${item.memo || ""}</td>
-        <td><button onclick="deleteArea(${index})">削除</button></td>
-      </tr>
-    `;
-  });
+    document.querySelectorAll("input")
+    .forEach(input=>{
+
+        input.value = "";
+    });
 }
 
-function deleteArea(index){
-  if(confirm("削除しますか？")){
-    areaDB.splice(index,1);
-    localStorage.setItem("areaDB", JSON.stringify(areaDB));
-    renderAreaDB();
-  }
+function renderTable(){
+
+    const tbody =
+    document.getElementById("customerTable");
+
+    tbody.innerHTML = "";
+
+    customers.forEach((c,index)=>{
+
+        tbody.innerHTML += `
+
+        <tr>
+
+        <td>${c.name || ""}</td>
+
+        <td>${c.phone || ""}</td>
+
+        <td>${c.zipcode || ""}</td>
+
+        <td>${c.address || ""}</td>
+
+        <td>${c.staff || ""}</td>
+
+        <td>${c.biglobe1g || ""}</td>
+
+        <td>${c.biglobe10g || ""}</td>
+
+        <td>${c.nuro2g || ""}</td>
+
+        <td>${c.nuro10g || ""}</td>
+
+        <td>
+        <span class="status ${getStatusClass(c.status)}">
+        ${c.status || ""}
+        </span>
+        </td>
+
+        <td>
+        <span class="status ${getRankClass(c.rank)}">
+        ${c.rank || ""}
+        </span>
+        </td>
+
+        <td>${c.lastContactDate || ""}</td>
+
+        <td>${c.nextContactDate || ""}</td>
+
+        <td>${c.productMemo || ""}</td>
+
+        <td>${c.checkDate || ""}</td>
+
+        <td>${c.memo || ""}</td>
+
+        <td>
+
+        <button class="delete-btn"
+        onclick="deleteCustomer(${index})">
+
+        削除
+
+        </button>
+
+        </td>
+
+        </tr>
+
+        `;
+    });
 }
 
-renderAreaDB();
+function getStatusClass(status){
+
+    if(status === "未対応"){
+        return "status-wait";
+    }
+
+    if(status === "LINE対応中"){
+        return "status-line";
+    }
+
+    if(status === "架電予定"){
+        return "status-call";
+    }
+
+    if(status === "成約"){
+        return "status-close";
+    }
+
+    return "";
+}
+
+function getRankClass(rank){
+
+    if(rank === "A"){
+        return "rankA";
+    }
+
+    if(rank === "B"){
+        return "rankB";
+    }
+
+    return "rankC";
+}
+
+function deleteCustomer(index){
+
+    if(confirm("削除しますか？")){
+
+        customers.splice(index,1);
+
+        saveStorage();
+
+        renderTable();
+    }
+}
+
+renderTable();
+
 </script>
 
 </body>
