@@ -24,19 +24,29 @@
     }
 
     input,
-    select {
+    select,
+    textarea {
       padding: 12px;
       font-size: 16px;
+      margin: 6px;
+      border: 1px solid #999;
+      border-radius: 4px;
+    }
+
+    input {
       width: 300px;
-      margin-right: 10px;
-      margin-bottom: 12px;
+    }
+
+    textarea {
+      width: 500px;
+      height: 70px;
     }
 
     button {
       padding: 10px 16px;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
-      margin-right: 8px;
+      margin: 4px;
     }
 
     table {
@@ -51,6 +61,7 @@
       padding: 10px;
       font-size: 14px;
       text-align: left;
+      vertical-align: top;
     }
 
     th {
@@ -66,9 +77,29 @@
       text-decoration: underline;
     }
 
-    .small-btn {
+    .status {
       padding: 6px 10px;
+      border-radius: 20px;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .未対応 { background: #eee; }
+    .架電済み { background: #dbeafe; }
+    .不在 { background: #fde68a; }
+    .LINE対応中 { background: #dcfce7; }
+    .見込み高 { background: #fecaca; }
+    .契約済み { background: #bbf7d0; }
+    .失注 { background: #e5e7eb; }
+
+    .small-btn {
       font-size: 13px;
+      padding: 6px 10px;
+    }
+
+    .search {
+      width: 500px;
+      max-width: 90%;
     }
   </style>
 </head>
@@ -78,7 +109,6 @@
   <h1>光回線 営業管理ツール</h1>
 
   <div class="box">
-
     <h2>顧客登録</h2>
 
     <input id="name" placeholder="名前">
@@ -99,17 +129,24 @@
 
     <br>
 
+    <textarea id="lineMemo" placeholder="LINE送信メモ"></textarea>
+    <textarea id="callHistory" placeholder="架電履歴"></textarea>
+
+    <br>
+
     <button onclick="addCustomer()">リストに追加</button>
     <button onclick="exportCSV()">CSV出力</button>
-
   </div>
 
   <div class="box">
+    <h2>検索</h2>
+    <input class="search" id="searchInput" placeholder="名前・電話番号・住所・ステータスで検索" oninput="renderList()">
+  </div>
 
+  <div class="box">
     <h2>顧客リスト</h2>
 
     <table>
-
       <thead>
         <tr>
           <th>名前</th>
@@ -121,70 +158,54 @@
           <th>NURO種別</th>
           <th>提案候補</th>
           <th>対応状況</th>
+          <th>LINEメモ</th>
+          <th>架電履歴</th>
           <th>公式確認</th>
+          <th>地図</th>
           <th>操作</th>
         </tr>
       </thead>
 
       <tbody id="customerList"></tbody>
-
     </table>
-
   </div>
 
   <script>
-
-    let customers =
-      JSON.parse(localStorage.getItem("customers")) || [];
+    let customers = JSON.parse(localStorage.getItem("customers")) || [];
 
     function detectCarrier(phone) {
-
-      const number =
-        phone.replace(/[^0-9]/g, "");
-
-      const prefix5 =
-        number.substring(0, 5);
+      const number = phone.replace(/[^0-9]/g, "");
+      const prefix5 = number.substring(0, 5);
 
       const map = {
-
         "09010": "docomo系",
         "09011": "docomo系",
+        "09012": "docomo系",
         "09013": "au系",
+        "09014": "au系",
         "09015": "SoftBank系",
+        "09016": "SoftBank系",
 
         "08030": "SoftBank系",
         "08050": "au系",
         "08070": "楽天系",
         "08077": "docomo系",
 
-        "07010": "楽天系"
-
+        "07010": "楽天系",
+        "07012": "格安SIM系"
       };
 
-      if (map[prefix5]) {
-        return map[prefix5];
-      }
+      if (map[prefix5]) return map[prefix5];
 
-      if (number.startsWith("090")) {
-        return "大手キャリア系";
-      }
-
-      if (number.startsWith("080")) {
-        return "大手/格安SIM系";
-      }
-
-      if (number.startsWith("070")) {
-        return "楽天/格安SIM系";
-      }
+      if (number.startsWith("090")) return "大手キャリア系";
+      if (number.startsWith("080")) return "大手/格安SIM系";
+      if (number.startsWith("070")) return "楽天/格安SIM系";
 
       return "不明";
     }
 
     function checkNTT(address) {
-
-      if (!address) {
-        return "住所未入力";
-      }
+      if (!address) return "住所未入力";
 
       if (
         address.includes("東京") ||
@@ -192,20 +213,26 @@
         address.includes("千葉") ||
         address.includes("埼玉") ||
         address.includes("大阪") ||
+        address.includes("愛知") ||
+        address.includes("福岡") ||
         address.includes("北海道")
       ) {
-
         return "利用可能性あり";
-
       }
 
       return "要確認";
     }
 
     function checkNuro(address) {
+      if (!address) return "住所未入力";
 
-      if (!address) {
-        return "住所未入力";
+      if (
+        address.includes("札幌市東区北48") ||
+        address.includes("札幌市東区北四十八") ||
+        address.includes("北海道札幌市東区北48") ||
+        address.includes("北海道札幌市東区北四十八")
+      ) {
+        return "未提供の可能性高";
       }
 
       if (
@@ -216,111 +243,84 @@
         address.includes("大阪") ||
         address.includes("兵庫") ||
         address.includes("愛知") ||
-        address.includes("福岡") ||
-        address.includes("北海道")
+        address.includes("静岡") ||
+        address.includes("福岡")
       ) {
-
         return "提供範囲内の可能性あり";
+      }
 
+      if (address.includes("北海道")) {
+        return "一部提供・要公式確認";
       }
 
       return "範囲外または要確認";
     }
 
     function detectNuroType(address) {
+      if (!address) return "不明";
 
-      if (!address) {
-        return "不明";
+      if (
+        address.includes("札幌市東区北48") ||
+        address.includes("札幌市東区北四十八") ||
+        address.includes("北海道札幌市東区北48") ||
+        address.includes("北海道札幌市東区北四十八")
+      ) {
+        return "2G/10Gとも未提供の可能性高";
       }
 
       if (
         address.includes("東京") ||
-        address.includes("大阪")
+        address.includes("神奈川") ||
+        address.includes("大阪") ||
+        address.includes("愛知")
       ) {
-
-        return "10G候補";
-
+        return "2G / 10G候補";
       }
 
-      return "2G候補または要確認";
+      if (
+        address.includes("千葉") ||
+        address.includes("埼玉") ||
+        address.includes("兵庫") ||
+        address.includes("福岡") ||
+        address.includes("静岡")
+      ) {
+        return "2G候補・10G要確認";
+      }
+
+      if (address.includes("北海道")) {
+        return "地域により未提供・要公式確認";
+      }
+
+      return "要確認";
     }
 
     function suggestPlan(carrier, ntt, nuro) {
+      if (nuro.includes("提供範囲内")) return "NURO光 / 光コラボ";
+      if (nuro.includes("未提供")) return "光コラボ / home 5G / SoftBank Air";
+      if (ntt.includes("可能性")) return "ドコモ光 / SoftBank光 / ビッグローブ光";
 
-      if (
-        nuro.includes("可能性")
-      ) {
-
-        return "NURO光 / 光コラボ";
-
-      }
-
-      if (
-        ntt.includes("可能性")
-      ) {
-
-        return "光コラボ";
-
-      }
-
-      if (
-        carrier.includes("au")
-      ) {
-
-        return "auひかり";
-
-      }
-
-      if (
-        carrier.includes("SoftBank")
-      ) {
-
-        return "SoftBank光";
-
-      }
-
-      if (
-        carrier.includes("docomo")
-      ) {
-
-        return "ドコモ光";
-
-      }
+      if (carrier.includes("au")) return "auひかり / ビッグローブ光";
+      if (carrier.includes("SoftBank")) return "SoftBank光";
+      if (carrier.includes("docomo")) return "ドコモ光";
 
       return "ヒアリング優先";
     }
 
     function addCustomer() {
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+      const address = document.getElementById("address").value;
+      const status = document.getElementById("status").value;
+      const lineMemo = document.getElementById("lineMemo").value;
+      const callHistory = document.getElementById("callHistory").value;
 
-      const name =
-        document.getElementById("name").value;
-
-      const phone =
-        document.getElementById("phone").value;
-
-      const address =
-        document.getElementById("address").value;
-
-      const status =
-        document.getElementById("status").value;
-
-      const carrier =
-        detectCarrier(phone);
-
-      const ntt =
-        checkNTT(address);
-
-      const nuro =
-        checkNuro(address);
-
-      const nuroType =
-        detectNuroType(address);
-
-      const suggestion =
-        suggestPlan(carrier, ntt, nuro);
+      const carrier = detectCarrier(phone);
+      const ntt = checkNTT(address);
+      const nuro = checkNuro(address);
+      const nuroType = detectNuroType(address);
+      const suggestion = suggestPlan(carrier, ntt, nuro);
 
       customers.push({
-
         name,
         phone,
         carrier,
@@ -329,132 +329,154 @@
         nuro,
         nuroType,
         suggestion,
-        status
-
+        status,
+        lineMemo,
+        callHistory
       });
 
-      localStorage.setItem(
-        "customers",
-        JSON.stringify(customers)
-      );
-
+      saveCustomers();
       renderList();
+
+      document.getElementById("name").value = "";
+      document.getElementById("phone").value = "";
+      document.getElementById("address").value = "";
+      document.getElementById("lineMemo").value = "";
+      document.getElementById("callHistory").value = "";
+    }
+
+    function saveCustomers() {
+      localStorage.setItem("customers", JSON.stringify(customers));
     }
 
     function deleteCustomer(index) {
+      if (confirm("この顧客を削除しますか？")) {
+        customers.splice(index, 1);
+        saveCustomers();
+        renderList();
+      }
+    }
 
-      customers.splice(index, 1);
-
-      localStorage.setItem(
-        "customers",
-        JSON.stringify(customers)
-      );
-
+    function updateStatus(index, value) {
+      customers[index].status = value;
+      saveCustomers();
       renderList();
     }
 
-    function exportCSV() {
+    function updateLineMemo(index) {
+      const memo = prompt("LINE送信メモを入力してください", customers[index].lineMemo || "");
+      if (memo !== null) {
+        customers[index].lineMemo = memo;
+        saveCustomers();
+        renderList();
+      }
+    }
 
-      let csv =
-        "名前,電話番号,推定キャリア,住所,NTT回線,NURO光,NURO種別,提案候補,対応状況\n";
+    function updateCallHistory(index) {
+      const history = prompt("架電履歴を入力してください", customers[index].callHistory || "");
+      if (history !== null) {
+        customers[index].callHistory = history;
+        saveCustomers();
+        renderList();
+      }
+    }
+
+    function exportCSV() {
+      let csv = "名前,電話番号,推定キャリア,住所,NTT回線,NURO光,NURO種別,提案候補,対応状況,LINEメモ,架電履歴\n";
 
       customers.forEach(c => {
-
-        csv +=
-          `${c.name},${c.phone},${c.carrier},${c.address},${c.ntt},${c.nuro},${c.nuroType},${c.suggestion},${c.status}\n`;
-
+        csv += `"${c.name}","${c.phone}","${c.carrier}","${c.address}","${c.ntt}","${c.nuro}","${c.nuroType}","${c.suggestion}","${c.status}","${c.lineMemo || ""}","${c.callHistory || ""}"\n`;
       });
 
-      const blob =
-        new Blob(
-          ["\uFEFF" + csv],
-          { type: "text/csv;charset=utf-8;" }
-        );
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
 
-      const url =
-        URL.createObjectURL(blob);
-
-      const a =
-        document.createElement("a");
-
+      const a = document.createElement("a");
       a.href = url;
-
-      a.download =
-        "customers.csv";
-
+      a.download = "customers.csv";
       a.click();
     }
 
     function renderList() {
-
-      const tbody =
-        document.getElementById("customerList");
+      const tbody = document.getElementById("customerList");
+      const keyword = document.getElementById("searchInput").value.toLowerCase();
 
       tbody.innerHTML = "";
 
       customers.forEach((c, index) => {
+        const text = `
+          ${c.name}
+          ${c.phone}
+          ${c.carrier}
+          ${c.address}
+          ${c.ntt}
+          ${c.nuro}
+          ${c.nuroType}
+          ${c.suggestion}
+          ${c.status}
+          ${c.lineMemo || ""}
+          ${c.callHistory || ""}
+        `.toLowerCase();
+
+        if (!text.includes(keyword)) return;
+
+        const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.address);
 
         tbody.innerHTML += `
-
           <tr>
-
             <td>${c.name}</td>
-
             <td>${c.phone}</td>
-
             <td>${c.carrier}</td>
-
             <td>${c.address}</td>
-
             <td>${c.ntt}</td>
-
             <td>${c.nuro}</td>
-
             <td>${c.nuroType}</td>
-
             <td>${c.suggestion}</td>
 
-            <td>${c.status}</td>
+            <td>
+              <span class="status ${c.status}">${c.status}</span>
+              <br>
+              <select onchange="updateStatus(${index}, this.value)">
+                <option ${c.status === "未対応" ? "selected" : ""}>未対応</option>
+                <option ${c.status === "架電済み" ? "selected" : ""}>架電済み</option>
+                <option ${c.status === "不在" ? "selected" : ""}>不在</option>
+                <option ${c.status === "LINE対応中" ? "selected" : ""}>LINE対応中</option>
+                <option ${c.status === "見込み高" ? "selected" : ""}>見込み高</option>
+                <option ${c.status === "契約済み" ? "selected" : ""}>契約済み</option>
+                <option ${c.status === "失注" ? "selected" : ""}>失注</option>
+              </select>
+            </td>
 
             <td>
+              ${c.lineMemo || ""}
+              <br>
+              <button class="small-btn" onclick="updateLineMemo(${index})">編集</button>
+            </td>
 
-              <a
-                href="https://flets.com/app2/cao/"
-                target="_blank"
-              >
-                NTT確認
-              </a>
+            <td>
+              ${c.callHistory || ""}
+              <br>
+              <button class="small-btn" onclick="updateCallHistory(${index})">編集</button>
+            </td>
 
+            <td>
+              <a href="https://flets.com/app2/cao/" target="_blank">NTT確認</a>
               <br><br>
-
-              <a
-                href="https://nuro.jp/area/area_search/index_a.html"
-                target="_blank"
-              >
-                NURO確認
-              </a>
-
+              <a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">NURO確認</a>
             </td>
 
             <td>
-
-              <button
-                class="small-btn"
-                onclick="deleteCustomer(${index})"
-              >
-                削除
-              </button>
-
+              <a href="${mapUrl}" target="_blank">地図</a>
             </td>
 
+            <td>
+              <button class="small-btn" onclick="deleteCustomer(${index})">削除</button>
+            </td>
           </tr>
-
         `;
       });
     }
 
     renderList();
-
   </script>
 
 </body>
