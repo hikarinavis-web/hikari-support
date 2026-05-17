@@ -1,18 +1,73 @@
-<script>
-function checkCarrier() {
-  const phone = document.getElementById("phone").value.replace(/[^0-9]/g, "");
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>光回線 営業管理ツール</title>
 
-  let carrier = "不明";
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
 
-  if (phone.startsWith("090")) {
-    carrier = "大手キャリア系";
-  } else if (phone.startsWith("080")) {
-    carrier = "モバイル系";
-  } else if (phone.startsWith("070")) {
-    carrier = "格安SIM系";
-  }
+    input {
+      display: block;
+      width: 300px;
+      margin-bottom: 20px;
+      padding: 10px;
+      font-size: 20px;
+    }
 
-  document.getElementById("result").textContent =
-    "推定キャリア：" + carrier;
-}
-</script>
+    button {
+      padding: 10px 20px;
+      font-size: 24px;
+    }
+
+    #result {
+      margin-top: 30px;
+      font-size: 32px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>光回線 営業管理ツール</h1>
+
+  <input id="name" placeholder="名前">
+
+  <input id="phone" placeholder="電話番号">
+
+  <input id="address" placeholder="住所">
+
+  <button onclick="checkCarrier()">判定する</button>
+
+  <p id="result">推定キャリア：未判定</p>
+
+  <script>
+    function checkCarrier() {
+
+      const phone =
+        document.getElementById("phone")
+        .value
+        .replace(/[^0-9]/g, "");
+
+      let carrier = "不明";
+
+      if (phone.startsWith("090")) {
+        carrier = "大手キャリア系";
+      }
+      else if (phone.startsWith("080")) {
+        carrier = "モバイル系";
+      }
+      else if (phone.startsWith("070")) {
+        carrier = "格安SIM系";
+      }
+
+      document.getElementById("result").textContent =
+        "推定キャリア：" + carrier;
+    }
+  </script>
+
+</body>
+</html>
