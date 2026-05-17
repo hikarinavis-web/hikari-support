@@ -3,32 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>光回線 営業管理ツール</title>
 
 <style>
-body{font-family:sans-serif;background:#f5f5f5;margin:0;padding:20px;}
-.card{background:white;padding:25px;border-radius:12px;margin-bottom:30px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:15px;}
-input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:15px;box-sizing:border-box;}
-button{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-size:15px;margin:4px;}
-.add-btn{background:#0070f3;color:white;}
-.csv-btn{background:#16a34a;color:white;}
-.import-btn{background:#9333ea;color:white;}
-.delete-btn{background:#ef4444;color:white;}
-.db-btn{background:#0f766e;color:white;}
-table{width:100%;border-collapse:collapse;background:white;margin-top:20px;}
-th,td{border:1px solid #ddd;padding:10px;font-size:14px;text-align:left;vertical-align:top;}
-th{background:#f0f0f0;}
-.status{padding:6px 12px;border-radius:20px;color:white;font-weight:bold;display:inline-block;}
-.rankA{background:#16a34a;}
-.rankB{background:#f59e0b;}
-.rankC{background:#ef4444;}
-.status-wait{background:#6b7280;}
-.status-line{background:#3b82f6;}
-.status-call{background:#f59e0b;}
-.status-close{background:#16a34a;}
-a{color:#2563eb;text-decoration:none;}
-a:hover{text-decoration:underline;}
+
+body{
+    font-family:sans-serif;
+    background:#f5f5f5;
+    margin:0;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    margin-bottom:30px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:15px;
+    margin-bottom:15px;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+    box-sizing:border-box;
+}
+
+button{
+    padding:10px 16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+    margin:4px;
+}
+
+.add-btn{
+    background:#0070f3;
+    color:white;
+}
+
+.csv-btn{
+    background:#16a34a;
+    color:white;
+}
+
+.import-btn{
+    background:#9333ea;
+    color:white;
+}
+
+.db-btn{
+    background:#0f766e;
+    color:white;
+}
+
+.delete-btn{
+    background:#ef4444;
+    color:white;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    margin-top:20px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:10px;
+    font-size:14px;
+    text-align:left;
+    vertical-align:top;
+}
+
+th{
+    background:#f0f0f0;
+}
+
+.status{
+    padding:6px 12px;
+    border-radius:20px;
+    color:white;
+    font-weight:bold;
+    display:inline-block;
+}
+
+.rankA{
+    background:#16a34a;
+}
+
+.rankB{
+    background:#f59e0b;
+}
+
+.rankC{
+    background:#ef4444;
+}
+
+.status-wait{
+    background:#6b7280;
+}
+
+.status-line{
+    background:#3b82f6;
+}
+
+.status-call{
+    background:#f59e0b;
+}
+
+.status-close{
+    background:#16a34a;
+}
+
+a{
+    color:#2563eb;
+    text-decoration:none;
+}
+
+a:hover{
+    text-decoration:underline;
+}
+
 </style>
 </head>
 
@@ -37,12 +145,17 @@ a:hover{text-decoration:underline;}
 <h1>光回線 営業管理ツール</h1>
 
 <div class="card">
+
 <h2>顧客登録</h2>
 
 <div class="grid">
+
 <input id="name" placeholder="名前">
+
 <input id="phone" placeholder="電話番号">
-<input id="zipcode" placeholder="郵便番号" oninput="autoFillBiglobe()">
+
+<input id="zipcode" placeholder="郵便番号" oninput="autoFillArea()">
+
 <input id="address" placeholder="住所">
 
 <input id="staff" placeholder="担当者名">
@@ -63,6 +176,7 @@ a:hover{text-decoration:underline;}
 <input id="productMemo" placeholder="商材別メモ">
 
 <input id="lastContactDate" type="date">
+
 <input id="nextContactDate" type="date">
 
 <select id="biglobe1g">
@@ -77,23 +191,49 @@ a:hover{text-decoration:underline;}
 <option>未提供</option>
 </select>
 
-<input id="biglobeCheckDate" type="date">
+<select id="nuro2g">
+<option>要確認</option>
+<option>提供中</option>
+<option>未提供</option>
+</select>
+
+<select id="nuro10g">
+<option>要確認</option>
+<option>提供中</option>
+<option>未提供</option>
+</select>
+
+<input id="checkDate" type="date">
+
 <input id="judgeSource" placeholder="判定根拠" readonly>
+
 </div>
 
-<button class="add-btn" onclick="addCustomer()">リストに追加</button>
-<button class="csv-btn" onclick="downloadCSV()">CSV出力</button>
-<button class="import-btn" onclick="document.getElementById('csvFile').click()">CSVインポート</button>
+<button class="add-btn" onclick="addCustomer()">
+リストに追加
+</button>
+
+<button class="csv-btn" onclick="downloadCSV()">
+CSV出力
+</button>
+
+<button class="import-btn" onclick="document.getElementById('csvFile').click()">
+CSVインポート
+</button>
 
 <input type="file" id="csvFile" accept=".csv" style="display:none">
+
 </div>
 
 <div class="card">
+
 <h2>郵便番号別 判定DB登録</h2>
 
 <div class="grid">
+
 <input id="dbZipcode" placeholder="郵便番号">
-<input id="dbAreaMemo" placeholder="エリアメモ 例：札幌市中央区">
+
+<input id="dbAreaMemo" placeholder="エリアメモ">
 
 <select id="dbBiglobe1g">
 <option>要確認</option>
@@ -107,428 +247,731 @@ a:hover{text-decoration:underline;}
 <option>未提供</option>
 </select>
 
+<select id="dbNuro2g">
+<option>要確認</option>
+<option>提供中</option>
+<option>未提供</option>
+</select>
+
+<select id="dbNuro10g">
+<option>要確認</option>
+<option>提供中</option>
+<option>未提供</option>
+</select>
+
 <input id="dbCheckDate" type="date">
-<input id="dbMemo" placeholder="メモ 例：公式確認済み">
+
+<input id="dbMemo" placeholder="メモ">
+
 </div>
 
-<button class="db-btn" onclick="saveArea()">判定DBに保存</button>
+<button class="db-btn" onclick="saveArea()">
+判定DBに保存
+</button>
 
 <p>
+
 <a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/1" target="_blank">
-BIGLOBE提供エリア確認
+BIGLOBE確認
 </a>
+
+<br><br>
+
+<a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">
+NURO確認
+</a>
+
 </p>
+
 </div>
 
 <div class="card">
+
 <h2>検索・集計</h2>
-<p id="monthlySummary">今月成約数：0件</p>
+
+<p id="monthlySummary">
+今月成約数：0件
+</p>
+
 <input id="search" placeholder="検索" style="width:300px;padding:10px;">
+
 </div>
 
 <div class="card">
+
 <h2>顧客リスト</h2>
 
 <table>
+
 <thead>
+
 <tr>
+
 <th>名前</th>
 <th>電話番号</th>
 <th>郵便番号</th>
-<th>推定キャリア</th>
+<th>キャリア</th>
 <th>住所</th>
 <th>担当者</th>
+
 <th>BIGLOBE 1G</th>
 <th>BIGLOBE 10G</th>
+
+<th>NURO 2G</th>
+<th>NURO 10G</th>
+
 <th>判定根拠</th>
 <th>確認日</th>
+
 <th>提案候補</th>
+
 <th>対応状況</th>
 <th>ランク</th>
+
 <th>最終対応日</th>
 <th>次回連絡日</th>
+
 <th>商材メモ</th>
+
 <th>公式確認</th>
 <th>地図</th>
+
 <th>操作</th>
+
 </tr>
+
 </thead>
 
 <tbody id="customerTable"></tbody>
+
 </table>
+
 </div>
 
 <div class="card">
+
 <h2>判定DB一覧</h2>
 
 <table>
+
 <thead>
+
 <tr>
+
 <th>郵便番号</th>
-<th>エリアメモ</th>
+<th>エリア</th>
+
 <th>BIGLOBE 1G</th>
 <th>BIGLOBE 10G</th>
+
+<th>NURO 2G</th>
+<th>NURO 10G</th>
+
 <th>確認日</th>
 <th>メモ</th>
+
 <th>操作</th>
+
 </tr>
+
 </thead>
+
 <tbody id="areaTable"></tbody>
+
 </table>
+
 </div>
 
 <script>
-let customers = JSON.parse(localStorage.getItem("customers")) || [];
-let areaDB = JSON.parse(localStorage.getItem("areaDB")) || [];
+
+let customers =
+JSON.parse(localStorage.getItem("customers")) || [];
+
+let areaDB =
+JSON.parse(localStorage.getItem("areaDB")) || [];
 
 function saveCustomers(){
-  localStorage.setItem("customers", JSON.stringify(customers));
+
+    localStorage.setItem(
+        "customers",
+        JSON.stringify(customers)
+    );
 }
 
 function saveAreaDB(){
-  localStorage.setItem("areaDB", JSON.stringify(areaDB));
+
+    localStorage.setItem(
+        "areaDB",
+        JSON.stringify(areaDB)
+    );
 }
 
-document.getElementById("search").addEventListener("input", renderTable);
+document.getElementById("search")
+.addEventListener("input", renderTable);
 
 function cleanZip(zipcode){
-  return zipcode.replace(/[^0-9]/g,"");
+
+    return zipcode.replace(/[^0-9]/g,"");
 }
 
 function findAreaByZip(zipcode){
-  const zip = cleanZip(zipcode);
-  return areaDB.find(area => area.zipcode === zip);
+
+    const zip = cleanZip(zipcode);
+
+    return areaDB.find(
+        area => area.zipcode === zip
+    );
 }
 
-function autoFillBiglobe(){
-  const zipcode = document.getElementById("zipcode").value;
-  const area = findAreaByZip(zipcode);
+function autoFillArea(){
 
-  if(area){
-    document.getElementById("biglobe1g").value = area.biglobe1g;
-    document.getElementById("biglobe10g").value = area.biglobe10g;
-    document.getElementById("biglobeCheckDate").value = area.checkDate || "";
-    document.getElementById("judgeSource").value = "郵便番号DB";
-  }else{
-    document.getElementById("biglobe1g").value = "要確認";
-    document.getElementById("biglobe10g").value = "要確認";
-    document.getElementById("judgeSource").value = "未登録";
-  }
+    const zipcode =
+    document.getElementById("zipcode").value;
+
+    const area =
+    findAreaByZip(zipcode);
+
+    if(area){
+
+        document.getElementById("biglobe1g").value =
+        area.biglobe1g;
+
+        document.getElementById("biglobe10g").value =
+        area.biglobe10g;
+
+        document.getElementById("nuro2g").value =
+        area.nuro2g;
+
+        document.getElementById("nuro10g").value =
+        area.nuro10g;
+
+        document.getElementById("checkDate").value =
+        area.checkDate || "";
+
+        document.getElementById("judgeSource").value =
+        "郵便番号DB";
+
+    }else{
+
+        document.getElementById("judgeSource").value =
+        "未登録";
+    }
 }
 
 function detectCarrier(phone){
-  const num = phone.replace(/[^0-9]/g,"");
 
-  if(num.startsWith("090") || num.startsWith("080")){
-    return "大手キャリア系";
-  }
+    const num =
+    phone.replace(/[^0-9]/g,"");
 
-  if(num.startsWith("070")){
-    return "楽天/格安SIM系";
-  }
+    if(
+        num.startsWith("090") ||
+        num.startsWith("080")
+    ){
+        return "大手キャリア系";
+    }
 
-  return "不明";
+    if(num.startsWith("070")){
+        return "楽天/格安SIM系";
+    }
+
+    return "不明";
 }
 
-function suggestPlan(biglobe1g,biglobe10g){
-  if(biglobe10g === "提供中"){
-    return "10G提案優先 / ドコモ光10G / BIGLOBE 10G";
-  }
+function suggestPlan(
+    biglobe10g,
+    nuro10g,
+    biglobe1g,
+    nuro2g
+){
 
-  if(biglobe1g === "提供中"){
-    return "1G光コラボ提案 / BIGLOBE光 / ドコモ光";
-  }
+    if(
+        biglobe10g === "提供中"
+    ){
+        return "ドコモ光10G / BIGLOBE10G";
+    }
 
-  if(biglobe1g === "未提供" && biglobe10g === "未提供"){
-    return "home 5G / SoftBank Air / WiMAX確認";
-  }
+    if(
+        nuro10g === "提供中"
+    ){
+        return "NURO 10G優先";
+    }
 
-  return "公式確認・ヒアリング優先";
+    if(
+        biglobe1g === "提供中"
+    ){
+        return "BIGLOBE 1G / 光コラボ";
+    }
+
+    if(
+        nuro2g === "提供中"
+    ){
+        return "NURO 2G";
+    }
+
+    return "要ヒアリング";
 }
 
 function saveArea(){
-  const zipcode = cleanZip(document.getElementById("dbZipcode").value);
-  const areaMemo = document.getElementById("dbAreaMemo").value;
-  const biglobe1g = document.getElementById("dbBiglobe1g").value;
-  const biglobe10g = document.getElementById("dbBiglobe10g").value;
-  const checkDate = document.getElementById("dbCheckDate").value;
-  const memo = document.getElementById("dbMemo").value;
 
-  if(!zipcode){
-    alert("郵便番号を入力してください");
-    return;
-  }
+    const zipcode =
+    cleanZip(
+        document.getElementById("dbZipcode").value
+    );
 
-  const existingIndex = areaDB.findIndex(area => area.zipcode === zipcode);
+    const areaMemo =
+    document.getElementById("dbAreaMemo").value;
 
-  const data = {
-    zipcode,
-    areaMemo,
-    biglobe1g,
-    biglobe10g,
-    checkDate,
-    memo
-  };
+    const biglobe1g =
+    document.getElementById("dbBiglobe1g").value;
 
-  if(existingIndex >= 0){
-    areaDB[existingIndex] = data;
-  }else{
-    areaDB.push(data);
-  }
+    const biglobe10g =
+    document.getElementById("dbBiglobe10g").value;
 
-  saveAreaDB();
-  renderAreaDB();
+    const nuro2g =
+    document.getElementById("dbNuro2g").value;
 
-  document.getElementById("dbZipcode").value = "";
-  document.getElementById("dbAreaMemo").value = "";
-  document.getElementById("dbCheckDate").value = "";
-  document.getElementById("dbMemo").value = "";
+    const nuro10g =
+    document.getElementById("dbNuro10g").value;
 
-  alert("判定DBに保存しました");
+    const checkDate =
+    document.getElementById("dbCheckDate").value;
+
+    const memo =
+    document.getElementById("dbMemo").value;
+
+    if(!zipcode){
+
+        alert("郵便番号を入力してください");
+
+        return;
+    }
+
+    const existingIndex =
+    areaDB.findIndex(
+        area => area.zipcode === zipcode
+    );
+
+    const data = {
+
+        zipcode,
+        areaMemo,
+
+        biglobe1g,
+        biglobe10g,
+
+        nuro2g,
+        nuro10g,
+
+        checkDate,
+        memo
+
+    };
+
+    if(existingIndex >= 0){
+
+        areaDB[existingIndex] = data;
+
+    }else{
+
+        areaDB.push(data);
+    }
+
+    saveAreaDB();
+
+    renderAreaDB();
+
+    alert("判定DBに保存しました");
 }
 
 function addCustomer(){
-  const name = document.getElementById("name").value;
-  const phone = document.getElementById("phone").value;
-  const zipcode = cleanZip(document.getElementById("zipcode").value);
-  const address = document.getElementById("address").value;
-  const staff = document.getElementById("staff").value;
-  const status = document.getElementById("status").value;
-  const rank = document.getElementById("rank").value;
-  const productMemo = document.getElementById("productMemo").value;
-  const lastContactDate = document.getElementById("lastContactDate").value;
-  const nextContactDate = document.getElementById("nextContactDate").value;
 
-  let biglobe1g = document.getElementById("biglobe1g").value;
-  let biglobe10g = document.getElementById("biglobe10g").value;
-  let biglobeCheckDate = document.getElementById("biglobeCheckDate").value;
-  let judgeSource = document.getElementById("judgeSource").value || "手動入力";
+    const name =
+    document.getElementById("name").value;
 
-  const area = findAreaByZip(zipcode);
+    const phone =
+    document.getElementById("phone").value;
 
-  if(area){
-    biglobe1g = area.biglobe1g;
-    biglobe10g = area.biglobe10g;
-    biglobeCheckDate = area.checkDate || biglobeCheckDate;
-    judgeSource = "郵便番号DB";
-  }
+    const zipcode =
+    cleanZip(
+        document.getElementById("zipcode").value
+    );
 
-  const carrier = detectCarrier(phone);
-  const suggest = suggestPlan(biglobe1g,biglobe10g);
+    const address =
+    document.getElementById("address").value;
 
-  customers.push({
-    name,phone,zipcode,carrier,address,staff,
-    biglobe1g,biglobe10g,biglobeCheckDate,judgeSource,
-    suggest,status,rank,lastContactDate,nextContactDate,productMemo
-  });
+    const staff =
+    document.getElementById("staff").value;
 
-  saveCustomers();
-  renderTable();
-  clearInputs();
-}
+    const status =
+    document.getElementById("status").value;
 
-function clearInputs(){
-  document.querySelectorAll("input").forEach(input=>{
-    if(input.type !== "file" && input.id !== "search"){
-      input.value = "";
-    }
-  });
+    const rank =
+    document.getElementById("rank").value;
 
-  document.getElementById("biglobe1g").value = "要確認";
-  document.getElementById("biglobe10g").value = "要確認";
-}
+    const productMemo =
+    document.getElementById("productMemo").value;
 
-function renderTable(){
-  const keyword = document.getElementById("search").value;
-  const table = document.getElementById("customerTable");
+    const lastContactDate =
+    document.getElementById("lastContactDate").value;
 
-  table.innerHTML = "";
+    const nextContactDate =
+    document.getElementById("nextContactDate").value;
 
-  let monthlyClose = 0;
+    let biglobe1g =
+    document.getElementById("biglobe1g").value;
 
-  customers
-  .filter(c =>
-    (c.name || "").includes(keyword) ||
-    (c.phone || "").includes(keyword) ||
-    (c.zipcode || "").includes(keyword) ||
-    (c.address || "").includes(keyword) ||
-    (c.staff || "").includes(keyword) ||
-    (c.status || "").includes(keyword)
-  )
-  .forEach((c,index)=>{
+    let biglobe10g =
+    document.getElementById("biglobe10g").value;
 
-    if(c.status === "成約"){
-      monthlyClose++;
+    let nuro2g =
+    document.getElementById("nuro2g").value;
+
+    let nuro10g =
+    document.getElementById("nuro10g").value;
+
+    let checkDate =
+    document.getElementById("checkDate").value;
+
+    let judgeSource =
+    document.getElementById("judgeSource").value;
+
+    const area =
+    findAreaByZip(zipcode);
+
+    if(area){
+
+        biglobe1g = area.biglobe1g;
+        biglobe10g = area.biglobe10g;
+
+        nuro2g = area.nuro2g;
+        nuro10g = area.nuro10g;
+
+        checkDate = area.checkDate;
+
+        judgeSource = "郵便番号DB";
     }
 
-    table.innerHTML += `
-    <tr>
-      <td>${c.name || ""}</td>
-      <td>${c.phone || ""}</td>
-      <td>${c.zipcode || ""}</td>
-      <td>${c.carrier || ""}</td>
-      <td>${c.address || ""}</td>
-      <td>${c.staff || ""}</td>
+    const carrier =
+    detectCarrier(phone);
 
-      <td>${c.biglobe1g || "要確認"}</td>
-      <td>${c.biglobe10g || "要確認"}</td>
-      <td>${c.judgeSource || ""}</td>
-      <td>${c.biglobeCheckDate || ""}</td>
-      <td>${c.suggest || ""}</td>
+    const suggest =
+    suggestPlan(
+        biglobe10g,
+        nuro10g,
+        biglobe1g,
+        nuro2g
+    );
 
-      <td>
-        <span class="status ${getStatusClass(c.status)}">${c.status || ""}</span>
-      </td>
+    customers.push({
 
-      <td>
-        <span class="status ${getRankClass(c.rank)}">${c.rank || ""}</span>
-      </td>
+        name,
+        phone,
+        zipcode,
+        carrier,
+        address,
+        staff,
 
-      <td>${c.lastContactDate || ""}</td>
-      <td>${c.nextContactDate || ""}</td>
-      <td>${c.productMemo || ""}</td>
+        biglobe1g,
+        biglobe10g,
 
-      <td>
-        <a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/1" target="_blank">
-          BIGLOBE確認
-        </a>
-        <br><br>
-        <a href="https://flets.com/" target="_blank">
-          NTT確認
-        </a>
-      </td>
+        nuro2g,
+        nuro10g,
 
-      <td>
-        <a href="https://www.google.com/maps/search/${encodeURIComponent(c.address || "")}" target="_blank">
-          地図
-        </a>
-      </td>
+        checkDate,
+        judgeSource,
 
-      <td>
-        <button class="delete-btn" onclick="deleteCustomer(${index})">削除</button>
-      </td>
-    </tr>
-    `;
-  });
+        suggest,
+        status,
+        rank,
 
-  document.getElementById("monthlySummary").innerText =
-    "今月成約数：" + monthlyClose + "件";
-}
+        lastContactDate,
+        nextContactDate,
 
-function renderAreaDB(){
-  const table = document.getElementById("areaTable");
+        productMemo
 
-  table.innerHTML = "";
-
-  areaDB.forEach((area,index)=>{
-    table.innerHTML += `
-    <tr>
-      <td>${area.zipcode}</td>
-      <td>${area.areaMemo || ""}</td>
-      <td>${area.biglobe1g}</td>
-      <td>${area.biglobe10g}</td>
-      <td>${area.checkDate || ""}</td>
-      <td>${area.memo || ""}</td>
-      <td>
-        <button class="delete-btn" onclick="deleteArea(${index})">削除</button>
-      </td>
-    </tr>
-    `;
-  });
-}
-
-function getStatusClass(status){
-  if(status === "未対応") return "status-wait";
-  if(status === "LINE対応中") return "status-line";
-  if(status === "架電予定") return "status-call";
-  if(status === "成約") return "status-close";
-  return "";
-}
-
-function getRankClass(rank){
-  if(rank === "A") return "rankA";
-  if(rank === "B") return "rankB";
-  return "rankC";
-}
-
-function deleteCustomer(index){
-  if(confirm("削除しますか？")){
-    customers.splice(index,1);
-    saveCustomers();
-    renderTable();
-  }
-}
-
-function deleteArea(index){
-  if(confirm("この判定DBを削除しますか？")){
-    areaDB.splice(index,1);
-    saveAreaDB();
-    renderAreaDB();
-  }
-}
-
-function downloadCSV(){
-  let csv =
-  "名前,電話番号,郵便番号,キャリア,住所,担当者,BIGLOBE1G,BIGLOBE10G,判定根拠,確認日,提案候補,対応状況,ランク,最終対応日,次回連絡日,商材メモ\n";
-
-  customers.forEach(c=>{
-    csv +=
-    `"${c.name || ""}","${c.phone || ""}","${c.zipcode || ""}","${c.carrier || ""}","${c.address || ""}","${c.staff || ""}","${c.biglobe1g || ""}","${c.biglobe10g || ""}","${c.judgeSource || ""}","${c.biglobeCheckDate || ""}","${c.suggest || ""}","${c.status || ""}","${c.rank || ""}","${c.lastContactDate || ""}","${c.nextContactDate || ""}","${c.productMemo || ""}"\n`;
-  });
-
-  const blob = new Blob(["\uFEFF" + csv], {type:"text/csv;charset=utf-8;"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-
-  a.href = url;
-  a.download = "customers.csv";
-  a.click();
-}
-
-document.getElementById("csvFile").addEventListener("change", function(e){
-  const file = e.target.files[0];
-  if(!file) return;
-
-  const reader = new FileReader();
-
-  reader.onload = function(event){
-    const text = event.target.result;
-    const rows = text.split("\n");
-
-    rows.slice(1).forEach(row=>{
-      const cols = row.split(",");
-
-      if(cols.length > 5){
-        customers.push({
-          name: cols[0] || "",
-          phone: cols[1] || "",
-          zipcode: cols[2] || "",
-          carrier: cols[3] || "",
-          address: cols[4] || "",
-          staff: cols[5] || "",
-          biglobe1g: cols[6] || "要確認",
-          biglobe10g: cols[7] || "要確認",
-          judgeSource: cols[8] || "",
-          biglobeCheckDate: cols[9] || "",
-          suggest: cols[10] || "",
-          status: cols[11] || "",
-          rank: cols[12] || "",
-          lastContactDate: cols[13] || "",
-          nextContactDate: cols[14] || "",
-          productMemo: cols[15] || ""
-        });
-      }
     });
 
     saveCustomers();
-    renderTable();
-  };
 
-  reader.readAsText(file);
-});
+    renderTable();
+
+    clearInputs();
+}
+
+function clearInputs(){
+
+    document.querySelectorAll("input")
+    .forEach(input=>{
+
+        if(
+            input.type !== "file" &&
+            input.id !== "search"
+        ){
+
+            input.value = "";
+        }
+    });
+}
+
+function renderTable(){
+
+    const keyword =
+    document.getElementById("search").value;
+
+    const table =
+    document.getElementById("customerTable");
+
+    table.innerHTML = "";
+
+    let monthlyClose = 0;
+
+    customers
+    .filter(c=>
+
+        (c.name || "").includes(keyword) ||
+        (c.phone || "").includes(keyword) ||
+        (c.address || "").includes(keyword)
+
+    )
+    .forEach((c,index)=>{
+
+        if(c.status === "成約"){
+
+            monthlyClose++;
+        }
+
+        table.innerHTML += `
+
+        <tr>
+
+        <td>${c.name}</td>
+
+        <td>${c.phone}</td>
+
+        <td>${c.zipcode}</td>
+
+        <td>${c.carrier}</td>
+
+        <td>${c.address}</td>
+
+        <td>${c.staff}</td>
+
+        <td>${c.biglobe1g}</td>
+
+        <td>${c.biglobe10g}</td>
+
+        <td>${c.nuro2g}</td>
+
+        <td>${c.nuro10g}</td>
+
+        <td>${c.judgeSource}</td>
+
+        <td>${c.checkDate}</td>
+
+        <td>${c.suggest}</td>
+
+        <td>
+        <span class="status ${getStatusClass(c.status)}">
+        ${c.status}
+        </span>
+        </td>
+
+        <td>
+        <span class="status ${getRankClass(c.rank)}">
+        ${c.rank}
+        </span>
+        </td>
+
+        <td>${c.lastContactDate}</td>
+
+        <td>${c.nextContactDate}</td>
+
+        <td>${c.productMemo}</td>
+
+        <td>
+
+        <a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/1" target="_blank">
+        BIGLOBE確認
+        </a>
+
+        <br><br>
+
+        <a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">
+        NURO確認
+        </a>
+
+        </td>
+
+        <td>
+
+        <a href="https://www.google.com/maps/search/${encodeURIComponent(c.address)}" target="_blank">
+        地図
+        </a>
+
+        </td>
+
+        <td>
+
+        <button class="delete-btn"
+        onclick="deleteCustomer(${index})">
+
+        削除
+
+        </button>
+
+        </td>
+
+        </tr>
+
+        `;
+    });
+
+    document.getElementById("monthlySummary")
+    .innerText =
+    "今月成約数：" +
+    monthlyClose +
+    "件";
+}
+
+function renderAreaDB(){
+
+    const table =
+    document.getElementById("areaTable");
+
+    table.innerHTML = "";
+
+    areaDB.forEach((area,index)=>{
+
+        table.innerHTML += `
+
+        <tr>
+
+        <td>${area.zipcode}</td>
+
+        <td>${area.areaMemo}</td>
+
+        <td>${area.biglobe1g}</td>
+
+        <td>${area.biglobe10g}</td>
+
+        <td>${area.nuro2g}</td>
+
+        <td>${area.nuro10g}</td>
+
+        <td>${area.checkDate}</td>
+
+        <td>${area.memo}</td>
+
+        <td>
+
+        <button class="delete-btn"
+        onclick="deleteArea(${index})">
+
+        削除
+
+        </button>
+
+        </td>
+
+        </tr>
+
+        `;
+    });
+}
+
+function getStatusClass(status){
+
+    if(status === "未対応"){
+        return "status-wait";
+    }
+
+    if(status === "LINE対応中"){
+        return "status-line";
+    }
+
+    if(status === "架電予定"){
+        return "status-call";
+    }
+
+    if(status === "成約"){
+        return "status-close";
+    }
+
+    return "";
+}
+
+function getRankClass(rank){
+
+    if(rank === "A"){
+        return "rankA";
+    }
+
+    if(rank === "B"){
+        return "rankB";
+    }
+
+    return "rankC";
+}
+
+function deleteCustomer(index){
+
+    if(confirm("削除しますか？")){
+
+        customers.splice(index,1);
+
+        saveCustomers();
+
+        renderTable();
+    }
+}
+
+function deleteArea(index){
+
+    if(confirm("削除しますか？")){
+
+        areaDB.splice(index,1);
+
+        saveAreaDB();
+
+        renderAreaDB();
+    }
+}
+
+function downloadCSV(){
+
+    let csv =
+`名前,電話番号,郵便番号,キャリア,住所,担当者,BIGLOBE1G,BIGLOBE10G,NURO2G,NURO10G,判定根拠,確認日,提案候補,対応状況,ランク,最終対応日,次回連絡日,商材メモ\n`;
+
+    customers.forEach(c=>{
+
+        csv +=
+`${c.name},${c.phone},${c.zipcode},${c.carrier},${c.address},${c.staff},${c.biglobe1g},${c.biglobe10g},${c.nuro2g},${c.nuro10g},${c.judgeSource},${c.checkDate},${c.suggest},${c.status},${c.rank},${c.lastContactDate},${c.nextContactDate},${c.productMemo}\n`;
+
+    });
+
+    const blob =
+    new Blob(
+        ["\uFEFF" + csv],
+        {type:"text/csv;charset=utf-8;"}
+    );
+
+    const url =
+    URL.createObjectURL(blob);
+
+    const a =
+    document.createElement("a");
+
+    a.href = url;
+
+    a.download = "customers.csv";
+
+    a.click();
+}
 
 renderTable();
+
 renderAreaDB();
+
 </script>
 
 </body>
