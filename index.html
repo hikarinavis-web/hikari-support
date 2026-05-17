@@ -1,483 +1,529 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>光回線 営業管理ツール</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
-    }
+<title>光回線 営業管理ツール</title>
 
-    h1 {
-      margin-bottom: 20px;
-    }
+<style>
 
-    .box {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 24px;
-    }
+body{
+    font-family: sans-serif;
+    background:#f5f5f5;
+    margin:0;
+    padding:20px;
+}
 
-    input,
-    select,
-    textarea {
-      padding: 12px;
-      font-size: 16px;
-      margin: 6px;
-      border: 1px solid #999;
-      border-radius: 4px;
-    }
+h1{
+    margin-bottom:30px;
+}
 
-    input {
-      width: 300px;
-    }
+.card{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    margin-bottom:30px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
 
-    textarea {
-      width: 500px;
-      height: 70px;
-    }
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr 1fr;
+    gap:15px;
+    margin-bottom:15px;
+}
 
-    button {
-      padding: 10px 16px;
-      font-size: 15px;
-      cursor: pointer;
-      margin: 4px;
-    }
+input, select, textarea{
+    width:100%;
+    padding:14px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+    box-sizing:border-box;
+}
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-    }
+button{
+    padding:12px 18px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:16px;
+}
 
-    th,
-    td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      font-size: 14px;
-      text-align: left;
-      vertical-align: top;
-    }
+.add-btn{
+    background:#0070f3;
+    color:white;
+}
 
-    th {
-      background: #eee;
-    }
+.csv-btn{
+    background:#16a34a;
+    color:white;
+    margin-left:10px;
+}
 
-    a {
-      color: blue;
-      text-decoration: none;
-    }
+.delete-btn{
+    background:#ef4444;
+    color:white;
+}
 
-    a:hover {
-      text-decoration: underline;
-    }
+.memo-btn{
+    background:#9333ea;
+    color:white;
+}
 
-    .status {
-      padding: 6px 10px;
-      border-radius: 20px;
-      font-weight: bold;
-      display: inline-block;
-    }
+.call-btn{
+    background:#f59e0b;
+    color:white;
+}
 
-    .未対応 { background: #eee; }
-    .架電済み { background: #dbeafe; }
-    .不在 { background: #fde68a; }
-    .LINE対応中 { background: #dcfce7; }
-    .見込み高 { background: #fecaca; }
-    .契約済み { background: #bbf7d0; }
-    .失注 { background: #e5e7eb; }
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    background:white;
+}
 
-    .small-btn {
-      font-size: 13px;
-      padding: 6px 10px;
-    }
+th, td{
+    border:1px solid #ddd;
+    padding:12px;
+    text-align:left;
+    vertical-align:top;
+}
 
-    .search {
-      width: 500px;
-      max-width: 90%;
-    }
-  </style>
+th{
+    background:#f0f0f0;
+}
+
+.status{
+    padding:6px 12px;
+    border-radius:20px;
+    color:white;
+    font-weight:bold;
+    display:inline-block;
+}
+
+.status-wait{
+    background:#6b7280;
+}
+
+.status-line{
+    background:#3b82f6;
+}
+
+.status-call{
+    background:#f59e0b;
+}
+
+.status-close{
+    background:#16a34a;
+}
+
+.search-box{
+    margin-bottom:20px;
+}
+
+.memo-box{
+    white-space:pre-wrap;
+    font-size:14px;
+}
+
+a{
+    color:#2563eb;
+    text-decoration:none;
+}
+
+a:hover{
+    text-decoration:underline;
+}
+
+</style>
 </head>
 
 <body>
 
-  <h1>光回線 営業管理ツール</h1>
+<h1>光回線 営業管理ツール</h1>
 
-  <div class="box">
-    <h2>顧客登録</h2>
+<div class="card">
 
-    <input id="name" placeholder="名前">
-    <input id="phone" placeholder="電話番号">
-    <input id="address" placeholder="住所">
+<h2>顧客登録</h2>
 
-    <br>
+<div class="grid">
 
-    <select id="status">
-      <option>未対応</option>
-      <option>架電済み</option>
-      <option>不在</option>
-      <option>LINE対応中</option>
-      <option>見込み高</option>
-      <option>契約済み</option>
-      <option>失注</option>
-    </select>
+<input id="name" placeholder="名前">
 
-    <br>
+<input id="phone" placeholder="電話番号">
 
-    <textarea id="lineMemo" placeholder="LINE送信メモ"></textarea>
-    <textarea id="callHistory" placeholder="架電履歴"></textarea>
+<input id="zipcode" placeholder="郵便番号">
 
-    <br>
+<input id="address" placeholder="住所">
 
-    <button onclick="addCustomer()">リストに追加</button>
-    <button onclick="exportCSV()">CSV出力</button>
-  </div>
+</div>
 
-  <div class="box">
-    <h2>検索</h2>
-    <input class="search" id="searchInput" placeholder="名前・電話番号・住所・ステータスで検索" oninput="renderList()">
-  </div>
+<div class="grid">
 
-  <div class="box">
-    <h2>顧客リスト</h2>
+<select id="status">
+<option>未対応</option>
+<option>LINE対応中</option>
+<option>架電予定</option>
+<option>成約</option>
+</select>
 
-    <table>
-      <thead>
-        <tr>
-          <th>名前</th>
-          <th>電話番号</th>
-          <th>推定キャリア</th>
-          <th>住所</th>
-          <th>NTT回線</th>
-          <th>NURO光</th>
-          <th>NURO種別</th>
-          <th>提案候補</th>
-          <th>対応状況</th>
-          <th>LINEメモ</th>
-          <th>架電履歴</th>
-          <th>公式確認</th>
-          <th>地図</th>
-          <th>操作</th>
-        </tr>
-      </thead>
+<input id="search" placeholder="顧客検索">
 
-      <tbody id="customerList"></tbody>
-    </table>
-  </div>
+</div>
 
-  <script>
-    let customers = JSON.parse(localStorage.getItem("customers")) || [];
+<button class="add-btn" onclick="addCustomer()">
+リストに追加
+</button>
 
-    function detectCarrier(phone) {
-      const number = phone.replace(/[^0-9]/g, "");
-      const prefix5 = number.substring(0, 5);
+<button class="csv-btn" onclick="downloadCSV()">
+CSV出力
+</button>
 
-      const map = {
-        "09010": "docomo系",
-        "09011": "docomo系",
-        "09012": "docomo系",
-        "09013": "au系",
-        "09014": "au系",
-        "09015": "SoftBank系",
-        "09016": "SoftBank系",
+</div>
 
-        "08030": "SoftBank系",
-        "08050": "au系",
-        "08070": "楽天系",
-        "08077": "docomo系",
+<div class="card">
 
-        "07010": "楽天系",
-        "07012": "格安SIM系"
-      };
+<h2>顧客リスト</h2>
 
-      if (map[prefix5]) return map[prefix5];
+<table>
 
-      if (number.startsWith("090")) return "大手キャリア系";
-      if (number.startsWith("080")) return "大手/格安SIM系";
-      if (number.startsWith("070")) return "楽天/格安SIM系";
+<thead>
+<tr>
 
-      return "不明";
+<th>名前</th>
+<th>電話番号</th>
+<th>郵便番号</th>
+<th>推定キャリア</th>
+<th>住所</th>
+<th>NTT回線</th>
+<th>NURO光</th>
+<th>NURO種別</th>
+<th>提案候補</th>
+<th>対応状況</th>
+<th>LINEメモ</th>
+<th>架電履歴</th>
+<th>公式確認</th>
+<th>地図</th>
+<th>操作</th>
+
+</tr>
+</thead>
+
+<tbody id="customerTable"></tbody>
+
+</table>
+
+</div>
+
+<script>
+
+let customers = [];
+
+document.getElementById("search").addEventListener("input", renderTable);
+
+function detectCarrier(phone){
+
+    if(phone.startsWith("090") || phone.startsWith("080")){
+        return "大手キャリア系";
     }
 
-    function checkNTT(address) {
-      if (!address) return "住所未入力";
-
-      if (
-        address.includes("東京") ||
-        address.includes("神奈川") ||
-        address.includes("千葉") ||
-        address.includes("埼玉") ||
-        address.includes("大阪") ||
-        address.includes("愛知") ||
-        address.includes("福岡") ||
-        address.includes("北海道")
-      ) {
-        return "利用可能性あり";
-      }
-
-      return "要確認";
+    if(phone.startsWith("070")){
+        return "楽天/格安SIM系";
     }
 
-    function checkNuro(address) {
-      if (!address) return "住所未入力";
+    return "不明";
+}
 
-      if (
+function checkNTT(address){
+
+    if(address.includes("札幌")){
+        return "利用可能性高";
+    }
+
+    return "要確認";
+}
+
+function checkNuro(zipcode, address){
+
+    const zip = zipcode.replace(/[^0-9]/g, "");
+
+    // 提供中エリア
+    if(
+        zip === "0640805" ||
+        address.includes("札幌市中央区南5条西8丁目")
+    ){
+        return "提供中";
+    }
+
+    // 未提供
+    if(
         address.includes("札幌市東区北48") ||
-        address.includes("札幌市東区北四十八") ||
-        address.includes("北海道札幌市東区北48") ||
-        address.includes("北海道札幌市東区北四十八")
-      ) {
-        return "未提供の可能性高";
-      }
-
-      if (
-        address.includes("東京") ||
-        address.includes("神奈川") ||
-        address.includes("千葉") ||
-        address.includes("埼玉") ||
-        address.includes("大阪") ||
-        address.includes("兵庫") ||
-        address.includes("愛知") ||
-        address.includes("静岡") ||
-        address.includes("福岡")
-      ) {
-        return "提供範囲内の可能性あり";
-      }
-
-      if (address.includes("北海道")) {
-        return "一部提供・要公式確認";
-      }
-
-      return "範囲外または要確認";
+        address.includes("札幌市東区北四十八")
+    ){
+        return "未提供";
     }
 
-    function detectNuroType(address) {
-      if (!address) return "不明";
+    if(address.includes("北海道")){
+        return "要公式確認";
+    }
 
-      if (
+    return "要確認";
+}
+
+function detectNuroType(zipcode, address){
+
+    const zip = zipcode.replace(/[^0-9]/g, "");
+
+    if(
+        zip === "0640805" ||
+        address.includes("札幌市中央区南5条西8丁目")
+    ){
+        return "2G / 10G提供中";
+    }
+
+    if(
         address.includes("札幌市東区北48") ||
-        address.includes("札幌市東区北四十八") ||
-        address.includes("北海道札幌市東区北48") ||
-        address.includes("北海道札幌市東区北四十八")
-      ) {
-        return "2G/10Gとも未提供の可能性高";
-      }
-
-      if (
-        address.includes("東京") ||
-        address.includes("神奈川") ||
-        address.includes("大阪") ||
-        address.includes("愛知")
-      ) {
-        return "2G / 10G候補";
-      }
-
-      if (
-        address.includes("千葉") ||
-        address.includes("埼玉") ||
-        address.includes("兵庫") ||
-        address.includes("福岡") ||
-        address.includes("静岡")
-      ) {
-        return "2G候補・10G要確認";
-      }
-
-      if (address.includes("北海道")) {
-        return "地域により未提供・要公式確認";
-      }
-
-      return "要確認";
+        address.includes("札幌市東区北四十八")
+    ){
+        return "2G/10G未提供";
     }
 
-    function suggestPlan(carrier, ntt, nuro) {
-      if (nuro.includes("提供範囲内")) return "NURO光 / 光コラボ";
-      if (nuro.includes("未提供")) return "光コラボ / home 5G / SoftBank Air";
-      if (ntt.includes("可能性")) return "ドコモ光 / SoftBank光 / ビッグローブ光";
+    return "要確認";
+}
 
-      if (carrier.includes("au")) return "auひかり / ビッグローブ光";
-      if (carrier.includes("SoftBank")) return "SoftBank光";
-      if (carrier.includes("docomo")) return "ドコモ光";
+function suggestPlan(nuro){
 
-      return "ヒアリング優先";
+    if(nuro === "提供中"){
+        return "NURO優先提案";
     }
 
-    function addCustomer() {
-      const name = document.getElementById("name").value;
-      const phone = document.getElementById("phone").value;
-      const address = document.getElementById("address").value;
-      const status = document.getElementById("status").value;
-      const lineMemo = document.getElementById("lineMemo").value;
-      const callHistory = document.getElementById("callHistory").value;
+    if(nuro === "未提供"){
+        return "フレッツ/光コラボ提案";
+    }
 
-      const carrier = detectCarrier(phone);
-      const ntt = checkNTT(address);
-      const nuro = checkNuro(address);
-      const nuroType = detectNuroType(address);
-      const suggestion = suggestPlan(carrier, ntt, nuro);
+    return "ヒアリング優先";
+}
 
-      customers.push({
+function getStatusClass(status){
+
+    if(status === "未対応"){
+        return "status status-wait";
+    }
+
+    if(status === "LINE対応中"){
+        return "status status-line";
+    }
+
+    if(status === "架電予定"){
+        return "status status-call";
+    }
+
+    if(status === "成約"){
+        return "status status-close";
+    }
+
+    return "status";
+}
+
+function addCustomer(){
+
+    const name = document.getElementById("name").value;
+    const phone = document.getElementById("phone").value;
+    const zipcode = document.getElementById("zipcode").value;
+    const address = document.getElementById("address").value;
+    const status = document.getElementById("status").value;
+
+    const carrier = detectCarrier(phone);
+    const ntt = checkNTT(address);
+    const nuro = checkNuro(zipcode, address);
+    const nuroType = detectNuroType(zipcode, address);
+    const suggest = suggestPlan(nuro);
+
+    const customer = {
+
         name,
         phone,
+        zipcode,
         carrier,
         address,
         ntt,
         nuro,
         nuroType,
-        suggestion,
+        suggest,
         status,
-        lineMemo,
-        callHistory
-      });
+        memo:"",
+        call:""
 
-      saveCustomers();
-      renderList();
+    };
 
-      document.getElementById("name").value = "";
-      document.getElementById("phone").value = "";
-      document.getElementById("address").value = "";
-      document.getElementById("lineMemo").value = "";
-      document.getElementById("callHistory").value = "";
-    }
+    customers.push(customer);
 
-    function saveCustomers() {
-      localStorage.setItem("customers", JSON.stringify(customers));
-    }
+    renderTable();
 
-    function deleteCustomer(index) {
-      if (confirm("この顧客を削除しますか？")) {
-        customers.splice(index, 1);
-        saveCustomers();
-        renderList();
-      }
-    }
+    document.getElementById("name").value = "";
+    document.getElementById("phone").value = "";
+    document.getElementById("zipcode").value = "";
+    document.getElementById("address").value = "";
+}
 
-    function updateStatus(index, value) {
-      customers[index].status = value;
-      saveCustomers();
-      renderList();
-    }
+function renderTable(){
 
-    function updateLineMemo(index) {
-      const memo = prompt("LINE送信メモを入力してください", customers[index].lineMemo || "");
-      if (memo !== null) {
-        customers[index].lineMemo = memo;
-        saveCustomers();
-        renderList();
-      }
-    }
+    const keyword = document.getElementById("search").value;
 
-    function updateCallHistory(index) {
-      const history = prompt("架電履歴を入力してください", customers[index].callHistory || "");
-      if (history !== null) {
-        customers[index].callHistory = history;
-        saveCustomers();
-        renderList();
-      }
-    }
+    const table = document.getElementById("customerTable");
 
-    function exportCSV() {
-      let csv = "名前,電話番号,推定キャリア,住所,NTT回線,NURO光,NURO種別,提案候補,対応状況,LINEメモ,架電履歴\n";
+    table.innerHTML = "";
 
-      customers.forEach(c => {
-        csv += `"${c.name}","${c.phone}","${c.carrier}","${c.address}","${c.ntt}","${c.nuro}","${c.nuroType}","${c.suggestion}","${c.status}","${c.lineMemo || ""}","${c.callHistory || ""}"\n`;
-      });
+    customers
+    .filter(c =>
+        c.name.includes(keyword) ||
+        c.phone.includes(keyword) ||
+        c.address.includes(keyword)
+    )
+    .forEach((c,index)=>{
 
-      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
+        table.innerHTML += `
 
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "customers.csv";
-      a.click();
-    }
+        <tr>
 
-    function renderList() {
-      const tbody = document.getElementById("customerList");
-      const keyword = document.getElementById("searchInput").value.toLowerCase();
+        <td>${c.name}</td>
 
-      tbody.innerHTML = "";
+        <td>${c.phone}</td>
 
-      customers.forEach((c, index) => {
-        const text = `
-          ${c.name}
-          ${c.phone}
-          ${c.carrier}
-          ${c.address}
-          ${c.ntt}
-          ${c.nuro}
-          ${c.nuroType}
-          ${c.suggestion}
-          ${c.status}
-          ${c.lineMemo || ""}
-          ${c.callHistory || ""}
-        `.toLowerCase();
+        <td>${c.zipcode}</td>
 
-        if (!text.includes(keyword)) return;
+        <td>${c.carrier}</td>
 
-        const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.address);
+        <td>${c.address}</td>
 
-        tbody.innerHTML += `
-          <tr>
-            <td>${c.name}</td>
-            <td>${c.phone}</td>
-            <td>${c.carrier}</td>
-            <td>${c.address}</td>
-            <td>${c.ntt}</td>
-            <td>${c.nuro}</td>
-            <td>${c.nuroType}</td>
-            <td>${c.suggestion}</td>
+        <td>${c.ntt}</td>
 
-            <td>
-              <span class="status ${c.status}">${c.status}</span>
-              <br>
-              <select onchange="updateStatus(${index}, this.value)">
-                <option ${c.status === "未対応" ? "selected" : ""}>未対応</option>
-                <option ${c.status === "架電済み" ? "selected" : ""}>架電済み</option>
-                <option ${c.status === "不在" ? "selected" : ""}>不在</option>
-                <option ${c.status === "LINE対応中" ? "selected" : ""}>LINE対応中</option>
-                <option ${c.status === "見込み高" ? "selected" : ""}>見込み高</option>
-                <option ${c.status === "契約済み" ? "selected" : ""}>契約済み</option>
-                <option ${c.status === "失注" ? "selected" : ""}>失注</option>
-              </select>
-            </td>
+        <td>${c.nuro}</td>
 
-            <td>
-              ${c.lineMemo || ""}
-              <br>
-              <button class="small-btn" onclick="updateLineMemo(${index})">編集</button>
-            </td>
+        <td>${c.nuroType}</td>
 
-            <td>
-              ${c.callHistory || ""}
-              <br>
-              <button class="small-btn" onclick="updateCallHistory(${index})">編集</button>
-            </td>
+        <td>${c.suggest}</td>
 
-            <td>
-              <a href="https://flets.com/app2/cao/" target="_blank">NTT確認</a>
-              <br><br>
-              <a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">NURO確認</a>
-            </td>
+        <td>
 
-            <td>
-              <a href="${mapUrl}" target="_blank">地図</a>
-            </td>
+        <div class="${getStatusClass(c.status)}">
+        ${c.status}
+        </div>
 
-            <td>
-              <button class="small-btn" onclick="deleteCustomer(${index})">削除</button>
-            </td>
-          </tr>
+        </td>
+
+        <td class="memo-box">
+        ${c.memo}
+        <br><br>
+        <button class="memo-btn" onclick="editMemo(${index})">
+        編集
+        </button>
+        </td>
+
+        <td class="memo-box">
+        ${c.call}
+        <br><br>
+        <button class="call-btn" onclick="editCall(${index})">
+        編集
+        </button>
+        </td>
+
+        <td>
+
+        <a href="https://flets.com/" target="_blank">
+        NTT確認
+        </a>
+
+        <br><br>
+
+        <a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">
+        NURO確認
+        </a>
+
+        </td>
+
+        <td>
+
+        <a href="https://www.google.com/maps/search/${encodeURIComponent(c.address)}" target="_blank">
+        地図
+        </a>
+
+        </td>
+
+        <td>
+
+        <button class="delete-btn" onclick="deleteCustomer(${index})">
+        削除
+        </button>
+
+        </td>
+
+        </tr>
+
         `;
-      });
-    }
+    });
+}
 
-    renderList();
-  </script>
+function deleteCustomer(index){
+
+    if(confirm("削除しますか？")){
+
+        customers.splice(index,1);
+
+        renderTable();
+    }
+}
+
+function editMemo(index){
+
+    const memo = prompt("LINEメモ入力", customers[index].memo);
+
+    if(memo !== null){
+
+        customers[index].memo = memo;
+
+        renderTable();
+    }
+}
+
+function editCall(index){
+
+    const call = prompt("架電履歴入力", customers[index].call);
+
+    if(call !== null){
+
+        customers[index].call = call;
+
+        renderTable();
+    }
+}
+
+function downloadCSV(){
+
+    let csv = "名前,電話番号,郵便番号,キャリア,住所,NTT,NURO,NURO種別,提案候補,対応状況\n";
+
+    customers.forEach(c=>{
+
+        csv += `${c.name},${c.phone},${c.zipcode},${c.carrier},${c.address},${c.ntt},${c.nuro},${c.nuroType},${c.suggest},${c.status}\n`;
+
+    });
+
+    const blob = new Blob([csv], {type:"text/csv"});
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+
+    a.download = "customers.csv";
+
+    a.click();
+}
+
+</script>
 
 </body>
 </html>
