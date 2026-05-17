@@ -1,37 +1,18 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <title>光回線 営業管理ツール</title>
-</head>
-<body>
-  <h1>光回線 営業管理ツール</h1>
+<script>
+function checkCarrier() {
+  const phone = document.getElementById("phone").value.replace(/[^0-9]/g, "");
 
-  <input id="name" placeholder="名前"><br><br>
-  <input id="phone" placeholder="電話番号"><br><br>
-  <input id="address" placeholder="住所"><br><br>
+  let carrier = "不明";
 
-  <button onclick="checkCarrier()">判定する</button>
+  if (phone.startsWith("090")) {
+    carrier = "大手キャリア系";
+  } else if (phone.startsWith("080")) {
+    carrier = "モバイル系";
+  } else if (phone.startsWith("070")) {
+    carrier = "格安SIM系";
+  }
 
-  <p id="result">推定キャリア：未判定</p>
-
-  <script>
-    function checkCarrier() {
-      const phone = document.getElementById("phone").value.replace(/[^0-9]/g, "");
-      const prefix = phone.substring(0, 5);
-
-      let carrier = "不明";
-
-      if (prefix === "08030") {
-        carrier = "SoftBank系";
-      } else if (prefix === "08050") {
-        carrier = "au系";
-      } else if (prefix === "08077") {
-        carrier = "docomo系";
-      }
-
-      document.getElementById("result").textContent = "推定キャリア：" + carrier;
-    }
-  </script>
-</body>
-</html>
+  document.getElementById("result").textContent =
+    "推定キャリア：" + carrier;
+}
+</script>
