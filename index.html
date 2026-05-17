@@ -3,152 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>光回線 営業管理ツール</title>
 
 <style>
-
-body{
-    font-family:sans-serif;
-    background:#f5f5f5;
-    margin:0;
-    padding:20px;
-}
-
-h1{
-    margin-bottom:30px;
-}
-
-.card{
-    background:white;
-    padding:25px;
-    border-radius:12px;
-    margin-bottom:30px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:15px;
-    margin-bottom:15px;
-}
-
-input, select{
-    width:100%;
-    padding:12px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    font-size:15px;
-    box-sizing:border-box;
-}
-
-button{
-    padding:10px 16px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:15px;
-}
-
-.add-btn{
-    background:#0070f3;
-    color:white;
-}
-
-.csv-btn{
-    background:#16a34a;
-    color:white;
-}
-
-.import-btn{
-    background:#9333ea;
-    color:white;
-}
-
-.delete-btn{
-    background:#ef4444;
-    color:white;
-}
-
-.memo-btn{
-    background:#f59e0b;
-    color:white;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    background:white;
-    margin-top:20px;
-}
-
-th, td{
-    border:1px solid #ddd;
-    padding:10px;
-    font-size:14px;
-    text-align:left;
-    vertical-align:top;
-}
-
-th{
-    background:#f0f0f0;
-}
-
-.status{
-    padding:6px 12px;
-    border-radius:20px;
-    color:white;
-    font-weight:bold;
-    display:inline-block;
-}
-
-.rankA{
-    background:#16a34a;
-    color:white;
-}
-
-.rankB{
-    background:#f59e0b;
-    color:white;
-}
-
-.rankC{
-    background:#ef4444;
-    color:white;
-}
-
-.status-wait{
-    background:#6b7280;
-}
-
-.status-line{
-    background:#3b82f6;
-}
-
-.status-call{
-    background:#f59e0b;
-}
-
-.status-close{
-    background:#16a34a;
-}
-
-.summary{
-    font-size:18px;
-    font-weight:bold;
-    margin-bottom:10px;
-}
-
-a{
-    color:#2563eb;
-    text-decoration:none;
-}
-
-a:hover{
-    text-decoration:underline;
-}
-
+body{font-family:sans-serif;background:#f5f5f5;margin:0;padding:20px;}
+.card{background:white;padding:25px;border-radius:12px;margin-bottom:30px;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-bottom:15px;}
+input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:15px;box-sizing:border-box;}
+button{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;font-size:15px;margin-right:6px;}
+.add-btn{background:#0070f3;color:white;}
+.csv-btn{background:#16a34a;color:white;}
+.import-btn{background:#9333ea;color:white;}
+.delete-btn{background:#ef4444;color:white;}
+table{width:100%;border-collapse:collapse;background:white;margin-top:20px;}
+th,td{border:1px solid #ddd;padding:10px;font-size:14px;text-align:left;vertical-align:top;}
+th{background:#f0f0f0;}
+.status{padding:6px 12px;border-radius:20px;color:white;font-weight:bold;display:inline-block;}
+.rankA{background:#16a34a;}
+.rankB{background:#f59e0b;}
+.rankC{background:#ef4444;}
+.status-wait{background:#6b7280;}
+.status-line{background:#3b82f6;}
+.status-call{background:#f59e0b;}
+.status-close{background:#16a34a;}
+a{color:#2563eb;text-decoration:none;}
+a:hover{text-decoration:underline;}
 </style>
 </head>
 
@@ -157,11 +36,9 @@ a:hover{
 <h1>光回線 営業管理ツール</h1>
 
 <div class="card">
-
 <h2>顧客登録</h2>
 
 <div class="grid">
-
 <input id="name" placeholder="名前">
 <input id="phone" placeholder="電話番号">
 <input id="zipcode" placeholder="郵便番号">
@@ -187,38 +64,40 @@ a:hover{
 <input id="lastContactDate" type="date">
 <input id="nextContactDate" type="date">
 
+<select id="biglobe1g">
+<option>要確認</option>
+<option>提供中</option>
+<option>未提供</option>
+</select>
+
+<select id="biglobe10g">
+<option>要確認</option>
+<option>提供中</option>
+<option>未提供</option>
+</select>
+
+<input id="biglobeCheckDate" type="date">
 </div>
 
-<button class="add-btn" onclick="addCustomer()">
-リストに追加
-</button>
-
-<button class="csv-btn" onclick="downloadCSV()">
-CSV出力
-</button>
-
-<button class="import-btn" onclick="document.getElementById('csvFile').click()">
-CSVインポート
-</button>
+<button class="add-btn" onclick="addCustomer()">リストに追加</button>
+<button class="csv-btn" onclick="downloadCSV()">CSV出力</button>
+<button class="import-btn" onclick="document.getElementById('csvFile').click()">CSVインポート</button>
 
 <input type="file" id="csvFile" accept=".csv" style="display:none">
-
 </div>
 
 <div class="card">
-
-<div class="summary" id="monthlySummary">
-今月成約数：0件
+<h2>検索・集計</h2>
+<p id="monthlySummary">今月成約数：0件</p>
+<input id="search" placeholder="検索" style="width:300px;padding:10px;">
 </div>
 
-<input id="search" placeholder="検索" style="width:300px;padding:10px;">
+<div class="card">
+<h2>顧客リスト</h2>
 
 <table>
-
 <thead>
-
 <tr>
-
 <th>名前</th>
 <th>電話番号</th>
 <th>郵便番号</th>
@@ -228,6 +107,9 @@ CSVインポート
 <th>NTT</th>
 <th>NURO</th>
 <th>NURO種別</th>
+<th>BIGLOBE 1G</th>
+<th>BIGLOBE 10G</th>
+<th>確認日</th>
 <th>提案候補</th>
 <th>対応状況</th>
 <th>ランク</th>
@@ -237,439 +119,298 @@ CSVインポート
 <th>公式確認</th>
 <th>地図</th>
 <th>操作</th>
-
 </tr>
-
 </thead>
 
 <tbody id="customerTable"></tbody>
-
 </table>
-
 </div>
 
 <script>
-
-let customers =
-JSON.parse(localStorage.getItem("customers")) || [];
+let customers = JSON.parse(localStorage.getItem("customers")) || [];
 
 function saveCustomers(){
-
-    localStorage.setItem(
-        "customers",
-        JSON.stringify(customers)
-    );
+  localStorage.setItem("customers", JSON.stringify(customers));
 }
 
-document.getElementById("search")
-.addEventListener("input", renderTable);
+document.getElementById("search").addEventListener("input", renderTable);
 
 function detectCarrier(phone){
+  const num = phone.replace(/[^0-9]/g,"");
 
-    if(
-        phone.startsWith("090") ||
-        phone.startsWith("080")
-    ){
-        return "大手キャリア系";
-    }
+  if(num.startsWith("090") || num.startsWith("080")){
+    return "大手キャリア系";
+  }
 
-    if(phone.startsWith("070")){
-        return "楽天/格安SIM系";
-    }
+  if(num.startsWith("070")){
+    return "楽天/格安SIM系";
+  }
 
-    return "不明";
+  return "不明";
 }
 
 function checkNTT(address){
-
-    if(address.includes("札幌")){
-        return "利用可能性高";
-    }
-
-    return "要確認";
+  if(address.includes("札幌")){
+    return "利用可能性高";
+  }
+  return "要確認";
 }
 
 function checkNuro(zipcode,address){
+  const zip = zipcode.replace(/[^0-9]/g,"");
 
-    const zip =
-    zipcode.replace(/[^0-9]/g,"");
+  if(zip === "0640805" || address.includes("札幌市中央区南5条西8丁目")){
+    return "提供中";
+  }
 
-    if(
-        zip === "0640805" ||
-        address.includes("札幌市中央区南5条西8丁目")
-    ){
-        return "提供中";
-    }
+  if(address.includes("札幌市東区北48")){
+    return "未提供";
+  }
 
-    if(
-        address.includes("札幌市東区北48")
-    ){
-        return "未提供";
-    }
-
-    return "要確認";
+  return "要確認";
 }
 
 function detectNuroType(zipcode,address){
+  const zip = zipcode.replace(/[^0-9]/g,"");
 
-    const zip =
-    zipcode.replace(/[^0-9]/g,"");
+  if(zip === "0640805"){
+    return "2G / 10G提供中";
+  }
 
-    if(
-        zip === "0640805"
-    ){
-        return "2G / 10G提供中";
-    }
+  if(address.includes("札幌市東区北48")){
+    return "2G/10G未提供";
+  }
 
-    if(
-        address.includes("札幌市東区北48")
-    ){
-        return "2G/10G未提供";
-    }
-
-    return "要確認";
+  return "要確認";
 }
 
-function suggestPlan(nuro){
+function suggestPlan(nuro,biglobe1g,biglobe10g){
+  if(biglobe10g === "提供中"){
+    return "BIGLOBE 10G / ドコモ光10G提案";
+  }
 
-    if(nuro === "提供中"){
-        return "NURO優先";
-    }
+  if(biglobe1g === "提供中"){
+    return "BIGLOBE 1G / 光コラボ提案";
+  }
 
-    if(nuro === "未提供"){
-        return "フレッツ提案";
-    }
+  if(nuro === "提供中"){
+    return "NURO優先";
+  }
 
-    return "ヒアリング優先";
+  if(nuro === "未提供"){
+    return "フレッツ/光コラボ確認";
+  }
+
+  return "ヒアリング優先";
 }
 
 function addCustomer(){
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const zipcode = document.getElementById("zipcode").value;
+  const address = document.getElementById("address").value;
+  const staff = document.getElementById("staff").value;
+  const status = document.getElementById("status").value;
+  const rank = document.getElementById("rank").value;
+  const productMemo = document.getElementById("productMemo").value;
+  const lastContactDate = document.getElementById("lastContactDate").value;
+  const nextContactDate = document.getElementById("nextContactDate").value;
+  const biglobe1g = document.getElementById("biglobe1g").value;
+  const biglobe10g = document.getElementById("biglobe10g").value;
+  const biglobeCheckDate = document.getElementById("biglobeCheckDate").value;
 
-    const name =
-    document.getElementById("name").value;
+  const carrier = detectCarrier(phone);
+  const ntt = checkNTT(address);
+  const nuro = checkNuro(zipcode,address);
+  const nuroType = detectNuroType(zipcode,address);
+  const suggest = suggestPlan(nuro,biglobe1g,biglobe10g);
 
-    const phone =
-    document.getElementById("phone").value;
+  customers.push({
+    name,phone,zipcode,carrier,address,staff,ntt,nuro,nuroType,
+    biglobe1g,biglobe10g,biglobeCheckDate,
+    suggest,status,rank,lastContactDate,nextContactDate,productMemo
+  });
 
-    const zipcode =
-    document.getElementById("zipcode").value;
-
-    const address =
-    document.getElementById("address").value;
-
-    const staff =
-    document.getElementById("staff").value;
-
-    const status =
-    document.getElementById("status").value;
-
-    const rank =
-    document.getElementById("rank").value;
-
-    const productMemo =
-    document.getElementById("productMemo").value;
-
-    const lastContactDate =
-    document.getElementById("lastContactDate").value;
-
-    const nextContactDate =
-    document.getElementById("nextContactDate").value;
-
-    const carrier =
-    detectCarrier(phone);
-
-    const ntt =
-    checkNTT(address);
-
-    const nuro =
-    checkNuro(zipcode,address);
-
-    const nuroType =
-    detectNuroType(zipcode,address);
-
-    const suggest =
-    suggestPlan(nuro);
-
-    customers.push({
-
-        name,
-        phone,
-        zipcode,
-        carrier,
-        address,
-        staff,
-        ntt,
-        nuro,
-        nuroType,
-        suggest,
-        status,
-        rank,
-        productMemo,
-        lastContactDate,
-        nextContactDate
-
-    });
-
-    saveCustomers();
-
-    renderTable();
-
-    clearInputs();
+  saveCustomers();
+  renderTable();
+  clearInputs();
 }
 
 function clearInputs(){
-
-    document.querySelectorAll("input")
-    .forEach(input=>{
-
-        if(input.type !== "file"){
-            input.value = "";
-        }
-
-    });
+  document.querySelectorAll("input").forEach(input=>{
+    if(input.type !== "file"){
+      input.value = "";
+    }
+  });
 }
 
 function renderTable(){
+  const keyword = document.getElementById("search").value;
+  const table = document.getElementById("customerTable");
 
-    const keyword =
-    document.getElementById("search").value;
+  table.innerHTML = "";
 
-    const table =
-    document.getElementById("customerTable");
+  let monthlyClose = 0;
 
-    table.innerHTML = "";
+  customers
+  .filter(c =>
+    (c.name || "").includes(keyword) ||
+    (c.phone || "").includes(keyword) ||
+    (c.zipcode || "").includes(keyword) ||
+    (c.address || "").includes(keyword) ||
+    (c.staff || "").includes(keyword) ||
+    (c.status || "").includes(keyword)
+  )
+  .forEach((c,index)=>{
 
-    let monthlyClose = 0;
+    if(c.status === "成約"){
+      monthlyClose++;
+    }
 
-    customers
-    .filter(c=>
+    table.innerHTML += `
+    <tr>
+      <td>${c.name || ""}</td>
+      <td>${c.phone || ""}</td>
+      <td>${c.zipcode || ""}</td>
+      <td>${c.carrier || ""}</td>
+      <td>${c.address || ""}</td>
+      <td>${c.staff || ""}</td>
+      <td>${c.ntt || ""}</td>
+      <td>${c.nuro || ""}</td>
+      <td>${c.nuroType || ""}</td>
+      <td>${c.biglobe1g || "要確認"}</td>
+      <td>${c.biglobe10g || "要確認"}</td>
+      <td>${c.biglobeCheckDate || ""}</td>
+      <td>${c.suggest || ""}</td>
 
-        c.name.includes(keyword) ||
-        c.phone.includes(keyword) ||
-        c.address.includes(keyword)
+      <td>
+        <span class="status ${getStatusClass(c.status)}">${c.status || ""}</span>
+      </td>
 
-    )
-    .forEach((c,index)=>{
+      <td>
+        <span class="status ${getRankClass(c.rank)}">${c.rank || ""}</span>
+      </td>
 
-        if(c.status === "成約"){
-            monthlyClose++;
-        }
+      <td>${c.lastContactDate || ""}</td>
+      <td>${c.nextContactDate || ""}</td>
+      <td>${c.productMemo || ""}</td>
 
-        table.innerHTML += `
-
-        <tr>
-
-        <td>${c.name}</td>
-
-        <td>${c.phone}</td>
-
-        <td>${c.zipcode}</td>
-
-        <td>${c.carrier}</td>
-
-        <td>${c.address}</td>
-
-        <td>${c.staff}</td>
-
-        <td>${c.ntt}</td>
-
-        <td>${c.nuro}</td>
-
-        <td>${c.nuroType}</td>
-
-        <td>${c.suggest}</td>
-
-        <td>
-        <span class="status ${getStatusClass(c.status)}">
-        ${c.status}
-        </span>
-        </td>
-
-        <td>
-        <span class="${getRankClass(c.rank)}">
-        ${c.rank}
-        </span>
-        </td>
-
-        <td>${c.lastContactDate}</td>
-
-        <td>${c.nextContactDate}</td>
-
-        <td>${c.productMemo}</td>
-
-        <td>
-
-        <a href="https://flets.com/" target="_blank">
-        NTT確認
+      <td>
+        <a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/1" target="_blank">
+          BIGLOBE確認
         </a>
-
         <br><br>
-
+        <a href="https://flets.com/" target="_blank">
+          NTT確認
+        </a>
+        <br><br>
         <a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">
-        NURO確認
+          NURO確認
         </a>
+      </td>
 
-        </td>
-
-        <td>
-
-        <a href="https://www.google.com/maps/search/${encodeURIComponent(c.address)}" target="_blank">
-        地図
+      <td>
+        <a href="https://www.google.com/maps/search/${encodeURIComponent(c.address || "")}" target="_blank">
+          地図
         </a>
+      </td>
 
-        </td>
+      <td>
+        <button class="delete-btn" onclick="deleteCustomer(${index})">削除</button>
+      </td>
+    </tr>
+    `;
+  });
 
-        <td>
-
-        <button class="delete-btn"
-        onclick="deleteCustomer(${index})">
-
-        削除
-
-        </button>
-
-        </td>
-
-        </tr>
-
-        `;
-    });
-
-    document.getElementById("monthlySummary")
-    .innerText =
+  document.getElementById("monthlySummary").innerText =
     "今月成約数：" + monthlyClose + "件";
 }
 
 function getStatusClass(status){
-
-    if(status === "未対応"){
-        return "status-wait";
-    }
-
-    if(status === "LINE対応中"){
-        return "status-line";
-    }
-
-    if(status === "架電予定"){
-        return "status-call";
-    }
-
-    if(status === "成約"){
-        return "status-close";
-    }
-
-    return "";
+  if(status === "未対応") return "status-wait";
+  if(status === "LINE対応中") return "status-line";
+  if(status === "架電予定") return "status-call";
+  if(status === "成約") return "status-close";
+  return "";
 }
 
 function getRankClass(rank){
-
-    if(rank === "A"){
-        return "status rankA";
-    }
-
-    if(rank === "B"){
-        return "status rankB";
-    }
-
-    return "status rankC";
+  if(rank === "A") return "rankA";
+  if(rank === "B") return "rankB";
+  return "rankC";
 }
 
 function deleteCustomer(index){
-
-    if(confirm("削除しますか？")){
-
-        customers.splice(index,1);
-
-        saveCustomers();
-
-        renderTable();
-    }
+  if(confirm("削除しますか？")){
+    customers.splice(index,1);
+    saveCustomers();
+    renderTable();
+  }
 }
 
 function downloadCSV(){
+  let csv =
+  "名前,電話番号,郵便番号,キャリア,住所,担当者,NTT,NURO,NURO種別,BIGLOBE1G,BIGLOBE10G,BIGLOBE確認日,提案候補,対応状況,ランク,最終対応日,次回連絡日,商材メモ\n";
 
-    let csv =
-    "名前,電話番号,郵便番号,キャリア,住所,担当者,NTT,NURO,NURO種別,提案候補,対応状況,ランク,最終対応日,次回連絡日,商材メモ\n";
+  customers.forEach(c=>{
+    csv +=
+    `"${c.name || ""}","${c.phone || ""}","${c.zipcode || ""}","${c.carrier || ""}","${c.address || ""}","${c.staff || ""}","${c.ntt || ""}","${c.nuro || ""}","${c.nuroType || ""}","${c.biglobe1g || ""}","${c.biglobe10g || ""}","${c.biglobeCheckDate || ""}","${c.suggest || ""}","${c.status || ""}","${c.rank || ""}","${c.lastContactDate || ""}","${c.nextContactDate || ""}","${c.productMemo || ""}"\n`;
+  });
 
-    customers.forEach(c=>{
+  const blob = new Blob(["\uFEFF" + csv], {type:"text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
 
-        csv +=
-`${c.name},${c.phone},${c.zipcode},${c.carrier},${c.address},${c.staff},${c.ntt},${c.nuro},${c.nuroType},${c.suggest},${c.status},${c.rank},${c.lastContactDate},${c.nextContactDate},${c.productMemo}\n`;
-
-    });
-
-    const blob =
-    new Blob([csv],{type:"text/csv"});
-
-    const url =
-    URL.createObjectURL(blob);
-
-    const a =
-    document.createElement("a");
-
-    a.href = url;
-
-    a.download = "customers.csv";
-
-    a.click();
+  a.href = url;
+  a.download = "customers.csv";
+  a.click();
 }
 
-document.getElementById("csvFile")
-.addEventListener("change", function(e){
+document.getElementById("csvFile").addEventListener("change", function(e){
+  const file = e.target.files[0];
+  if(!file) return;
 
-    const file = e.target.files[0];
+  const reader = new FileReader();
 
-    if(!file) return;
+  reader.onload = function(event){
+    const text = event.target.result;
+    const rows = text.split("\n");
 
-    const reader = new FileReader();
+    rows.slice(1).forEach(row=>{
+      const cols = row.split(",");
 
-    reader.onload = function(event){
-
-        const text = event.target.result;
-
-        const rows = text.split("\n");
-
-        rows.slice(1).forEach(row=>{
-
-            const cols = row.split(",");
-
-            if(cols.length > 5){
-
-                customers.push({
-
-                    name: cols[0] || "",
-                    phone: cols[1] || "",
-                    zipcode: cols[2] || "",
-                    carrier: cols[3] || "",
-                    address: cols[4] || "",
-                    staff: cols[5] || "",
-                    ntt: cols[6] || "",
-                    nuro: cols[7] || "",
-                    nuroType: cols[8] || "",
-                    suggest: cols[9] || "",
-                    status: cols[10] || "",
-                    rank: cols[11] || "",
-                    lastContactDate: cols[12] || "",
-                    nextContactDate: cols[13] || "",
-                    productMemo: cols[14] || ""
-
-                });
-
-            }
-
+      if(cols.length > 5){
+        customers.push({
+          name: cols[0] || "",
+          phone: cols[1] || "",
+          zipcode: cols[2] || "",
+          carrier: cols[3] || "",
+          address: cols[4] || "",
+          staff: cols[5] || "",
+          ntt: cols[6] || "",
+          nuro: cols[7] || "",
+          nuroType: cols[8] || "",
+          biglobe1g: cols[9] || "要確認",
+          biglobe10g: cols[10] || "要確認",
+          biglobeCheckDate: cols[11] || "",
+          suggest: cols[12] || "",
+          status: cols[13] || "",
+          rank: cols[14] || "",
+          lastContactDate: cols[15] || "",
+          nextContactDate: cols[16] || "",
+          productMemo: cols[17] || ""
         });
+      }
+    });
 
-        saveCustomers();
+    saveCustomers();
+    renderTable();
+  };
 
-        renderTable();
-    };
-
-    reader.readAsText(file);
-
+  reader.readAsText(file);
 });
 
 renderTable();
-
 </script>
 
 </body>
