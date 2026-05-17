@@ -6,10 +6,32 @@
 </head>
 <body>
   <h1>光回線 営業管理ツール</h1>
-  <input placeholder="名前"><br><br>
-  <input placeholder="電話番号"><br><br>
-  <input placeholder="住所"><br><br>
-  <button>判定する</button>
-  <p>推定キャリア：docomo系</p>
+
+  <input id="name" placeholder="名前"><br><br>
+  <input id="phone" placeholder="電話番号"><br><br>
+  <input id="address" placeholder="住所"><br><br>
+
+  <button onclick="checkCarrier()">判定する</button>
+
+  <p id="result">推定キャリア：未判定</p>
+
+  <script>
+    function checkCarrier() {
+      const phone = document.getElementById("phone").value.replace(/[^0-9]/g, "");
+      const prefix = phone.substring(0, 5);
+
+      let carrier = "不明";
+
+      if (prefix === "08030") {
+        carrier = "SoftBank系";
+      } else if (prefix === "08050") {
+        carrier = "au系";
+      } else if (prefix === "08077") {
+        carrier = "docomo系";
+      }
+
+      document.getElementById("result").textContent = "推定キャリア：" + carrier;
+    }
+  </script>
 </body>
 </html>
