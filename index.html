@@ -3,70 +3,257 @@
 <head>
   <meta charset="UTF-8">
   <title>光回線 営業管理ツール</title>
-
   <style>
     body {
       font-family: sans-serif;
       padding: 20px;
+      background: #f5f5f5;
     }
 
-    input {
-      display: block;
-      width: 300px;
+    h1 {
+      font-size: 32px;
+    }
+
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
       margin-bottom: 20px;
-      padding: 10px;
-      font-size: 20px;
+    }
+
+    input, select {
+      width: 100%;
+      max-width: 420px;
+      padding: 12px;
+      margin-bottom: 12px;
+      font-size: 18px;
     }
 
     button {
-      padding: 10px 20px;
-      font-size: 24px;
+      padding: 12px 20px;
+      font-size: 18px;
+      cursor: pointer;
     }
 
-    #result {
-      margin-top: 30px;
-      font-size: 32px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    th {
+      background: #eee;
     }
   </style>
 </head>
-
 <body>
 
   <h1>光回線 営業管理ツール</h1>
 
-  <input id="name" placeholder="名前">
+  <div class="box">
+    <h2>顧客登録</h2>
 
-  <input id="phone" placeholder="電話番号">
+    <input id="name" placeholder="名前">
+    <input id="phone" placeholder="電話番号">
+    <input id="address" placeholder="住所">
 
-  <input id="address" placeholder="住所">
+    <select id="status">
+      <option>未対応</option>
+      <option>架電済み</option>
+      <option>不在</option>
+      <option>LINE対応中</option>
+      <option>見込み高</option>
+      <option>契約済み</option>
+      <option>失注</option>
+    </select>
 
-  <button onclick="checkCarrier()">判定する</button>
+    <br>
+    <button onclick="addCustomer()">リストに追加</button>
+  </div>
 
-  <p id="result">推定キャリア：未判定</p>
+  <div class="box">
+    <h2>顧客リスト</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>名前</th>
+          <th>電話番号</th>
+          <th>推定キャリア</th>
+          <th>住所</th>
+          <th>NTT回線</th>
+          <th>NURO光</th>
+          <th>NURO種別</th>
+          <th>提案候補</th>
+          <th>対応状況</th>
+        </tr>
+      </thead>
+      <tbody id="customerList"></tbody>
+    </table>
+  </div>
 
   <script>
-    function checkCarrier() {
+    let customers = JSON.parse(localStorage.getItem("customers")) || [];
 
-      const phone =
-        document.getElementById("phone")
-        .value
-        .replace(/[^0-9]/g, "");
+    function detectCarrier(phone) {
+      const number = phone.replace(/[^0-9]/g, "");
+      const prefix5 = number.substring(0, 5);
 
-      let carrier = "不明";
+      const map = {
+        "09010": "docomo系",
+        "09011": "docomo系",
+        "09012": "docomo系",
+        "09013": "au系",
+        "09014": "au系",
+        "09015": "SoftBank系",
+        "09016": "SoftBank系",
+        "08030": "SoftBank系",
+        "08050": "au系",
+        "08070": "楽天系",
+        "08077": "docomo系",
+        "07010": "楽天系",
+        "07012": "格安SIM系"
+      };
 
-      if (phone.startsWith("090")) {
-        carrier = "大手キャリア系";
+      if (map[prefix5]) {
+        return map[prefix5];
       }
-      else if (phone.startsWith("080")) {
-        carrier = "モバイル系";
-      }
-      else if (phone.startsWith("070")) {
-        carrier = "格安SIM系";
-      }
 
-      document.getElementById("result").textContent =
-        "推定キャリア：" + carrier;
+      if (number.startsWith("090")) return "大手キャリア系";
+      if (number.startsWith("080")) return "大手/格安SIM系";
+      if (number.startsWith("070")) return "楽天/格安SIM系";
+
+      return "不明";
     }
+
+    function checkNTT(address) {
+      if (!address) return "住所未入力";
+
+      if (
+        address.includes("東京") ||
+        address.includes("神奈川") ||
+        address.includes("千葉") ||
+        address.includes("埼玉") ||
+        address.includes("大阪") ||
+        address.includes("愛知") ||
+        address.includes("福岡") ||
+        address.includes("北海道")
+      ) {
+        return "利用可能性あり";
+      }
+
+      return "要確認";
+    }
+
+    function checkNuro(address) {
+      if (!address) return "住所未入力";
+
+      if (
+        address.includes("東京") ||
+        address.includes("神奈川") ||
+        address.includes("千葉") ||
+        address.includes("埼玉") ||
+        address.includes("大阪") ||
+        address.includes("兵庫") ||
+        address.includes("愛知") ||
+        address.includes("静岡") ||
+        address.includes("福岡") ||
+        address.includes("北海道")
+      ) {
+        return "提供範囲内の可能性あり";
+      }
+
+      return "範囲外または要確認";
+    }
+
+    function checkNuroType(address) {
+      if (!address) return "住所未入力";
+
+      if (
+        address.includes("東京") ||
+        address.includes("神奈川") ||
+        address.includes("大阪") ||
+        address.includes("愛知")
+      ) {
+        return "2G / 10G候補";
+      }
+
+      return "2G候補または要確認";
+    }
+
+    function suggestPlan(carrier, ntt, nuro) {
+      if (nuro.includes("可能性")) return "NURO光 / 光コラボ";
+      if (ntt.includes("可能性")) return "ドコモ光 / SoftBank光 / ビッグローブ光";
+      if (carrier.includes("au")) return "auひかり / ビッグローブ光";
+      if (carrier.includes("SoftBank")) return "SoftBank光";
+      if (carrier.includes("docomo")) return "ドコモ光";
+      return "ヒアリング優先";
+    }
+
+    function addCustomer() {
+      const name = document.getElementById("name").value;
+      const phone = document.getElementById("phone").value;
+      const address = document.getElementById("address").value;
+      const status = document.getElementById("status").value;
+
+      const carrier = detectCarrier(phone);
+      const ntt = checkNTT(address);
+      const nuro = checkNuro(address);
+      const nuroType = checkNuroType(address);
+      const suggestion = suggestPlan(carrier, ntt, nuro);
+
+      customers.push({
+        name,
+        phone,
+        carrier,
+        address,
+        ntt,
+        nuro,
+        nuroType,
+        suggestion,
+        status
+      });
+
+      localStorage.setItem("customers", JSON.stringify(customers));
+
+      renderList();
+
+      document.getElementById("name").value = "";
+      document.getElementById("phone").value = "";
+      document.getElementById("address").value = "";
+    }
+
+    function renderList() {
+      const tbody = document.getElementById("customerList");
+      tbody.innerHTML = "";
+
+      customers.forEach(customer => {
+        const row = `
+          <tr>
+            <td>${customer.name}</td>
+            <td>${customer.phone}</td>
+            <td>${customer.carrier}</td>
+            <td>${customer.address}</td>
+            <td>${customer.ntt}</td>
+            <td>${customer.nuro}</td>
+            <td>${customer.nuroType}</td>
+            <td>${customer.suggestion}</td>
+            <td>${customer.status}</td>
+          </tr>
+        `;
+
+        tbody.innerHTML += row;
+      });
+    }
+
+    renderList();
   </script>
 
 </body>
