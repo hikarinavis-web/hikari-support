@@ -1,3 +1,5 @@
+import "./globals.css";
+
 export const metadata = {
   title: "光回線 営業管理ツール",
   description: "営業管理Webアプリ",
