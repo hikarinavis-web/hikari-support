@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>光回線 顧客管理ツール</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -13,11 +14,13 @@ body{font-family:sans-serif;background:#f5f5f5;margin:0;padding:20px;}
 input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;}
 button{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;margin:4px;}
 .add{background:#0070f3;color:white;}
+.update{background:#f59e0b;color:white;}
 .csv{background:#16a34a;color:white;}
 .import{background:#9333ea;color:white;}
 .delete{background:#ef4444;color:white;}
 .check{background:#2563eb;color:white;}
 .logout{background:#111827;color:white;float:right;}
+.clear{background:#6b7280;color:white;}
 table{width:100%;border-collapse:collapse;background:white;}
 th,td{border:1px solid #ddd;padding:8px;font-size:13px;text-align:left;vertical-align:top;}
 th{background:#eee;}
@@ -30,6 +33,7 @@ th{background:#eee;}
 .rankB{background:#f59e0b;}
 .rankC{background:#ef4444;}
 .warning{color:#dc2626;font-weight:bold;}
+.success{color:#16a34a;font-weight:bold;}
 .login-box{max-width:400px;margin:100px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
 .hidden{display:none;}
 a{color:#2563eb;text-decoration:none;}
@@ -52,7 +56,9 @@ a{color:#2563eb;text-decoration:none;}
 <h1>光回線 顧客管理ツール</h1>
 
 <div class="card">
-<h2>顧客登録</h2>
+<h2>顧客登録・編集</h2>
+
+<input type="hidden" id="editingId">
 
 <div class="grid">
 <input id="name" placeholder="名前">
@@ -118,8 +124,11 @@ a{color:#2563eb;text-decoration:none;}
 </div>
 
 <p id="duplicateWarning" class="warning"></p>
+<p id="areaDbMessage" class="success"></p>
 
-<button class="add" onclick="saveCustomer()">顧客保存</button>
+<button class="add" onclick="saveCustomer()">新規保存</button>
+<button class="update" onclick="updateCustomer()">更新保存</button>
+<button class="clear" onclick="clearInputs()">入力クリア</button>
 <button class="csv" onclick="exportCSV()">CSV出力</button>
 <input type="file" id="csvFile" accept=".csv">
 <button class="import" onclick="importCSV()">CSVインポート</button>
@@ -203,6 +212,7 @@ function showApp(){
 
 async function checkLogin(){
   const { data } = await supabaseClient.auth.getSession();
+
   if(data.session){
     showApp();
     loadCustomers();
@@ -259,6 +269,7 @@ async function handleZipInput(){
 
   if(zip.length === 7){
     await autoFillAddress(zip);
+    await applyAreaJudgement(zip);
   }
 }
 
@@ -270,11 +281,48 @@ async function autoFillAddress(zip){
     if(data.status === 200 && data.results && data.results.length > 0){
       const result = data.results[0];
       const address = result.address1 + result.address2 + result.address3;
-      document.getElementById("address").value = address;
-      checkDuplicate(zip,address);
+
+      if(!document.getElementById("address").value){
+        document.getElementById("address").value = address;
+      }
+
+      checkDuplicate(zip,document.getElementById("address").value);
     }
   }catch(error){
     console.log("郵便番号検索エラー", error);
+  }
+}
+
+async function applyAreaJudgement(zip){
+  const { data, error } = await supabaseClient
+    .from("area_judgements")
+    .select("*")
+    .eq("zipcode", zip)
+    .order("created_at",{ascending:false})
+    .limit(1);
+
+  if(error){
+    console.log("判定DB取得エラー", error.message);
+    return;
+  }
+
+  if(data && data.length > 0){
+    const area = data[0];
+
+    document.getElementById("biglobe_1g").value = area.biglobe_1g || "要確認";
+    document.getElementById("biglobe_10g").value = area.biglobe_10g || "要確認";
+    document.getElementById("nuro_2g").value = area.nuro_2g || "要確認";
+    document.getElementById("nuro_10g").value = area.nuro_10g || "要確認";
+    document.getElementById("ntt_1g").value = area.ntt_1g || "要確認";
+    document.getElementById("ntt_10g").value = area.ntt_10g || "要確認";
+    document.getElementById("check_date").value = area.check_date || "";
+    document.getElementById("area_memo").value = area.area_memo || "";
+
+    document.getElementById("areaDbMessage").innerText =
+      "判定DBから自動反映しました";
+  }else{
+    document.getElementById("areaDbMessage").innerText =
+      "この郵便番号は判定DB未登録です";
   }
 }
 
@@ -284,19 +332,24 @@ document.getElementById("address").addEventListener("input",function(){
 });
 
 function checkDuplicate(zip,address){
+  const editingId = document.getElementById("editingId").value;
+
   const duplicate = customers.find(c =>
-    cleanZip(c.zipcode) === zip ||
-    (address && c.address === address)
+    String(c.id) !== String(editingId) &&
+    (
+      cleanZip(c.zipcode) === zip ||
+      (address && c.address === address)
+    )
   );
 
   document.getElementById("duplicateWarning").innerText =
     duplicate ? "注意：同じ郵便番号または住所の顧客があります" : "";
 }
 
-async function saveCustomer(){
+function getFormData(){
   const phone = document.getElementById("phone").value;
 
-  const data = {
+  return {
     name:document.getElementById("name").value,
     phone:phone,
     carrier:detectCarrier(phone),
@@ -315,6 +368,10 @@ async function saveCustomer(){
     area_memo:document.getElementById("area_memo").value,
     memo:document.getElementById("memo").value
   };
+}
+
+async function saveCustomer(){
+  const data = getFormData();
 
   const { error } = await supabaseClient
     .from("customers")
@@ -325,12 +382,117 @@ async function saveCustomer(){
     return;
   }
 
+  await saveAreaJudgement(data);
+
   alert("保存しました");
   clearInputs();
   loadCustomers();
 }
 
+async function updateCustomer(){
+  const id = document.getElementById("editingId").value;
+
+  if(!id){
+    alert("編集する顧客を選んでください");
+    return;
+  }
+
+  const data = getFormData();
+
+  const { error } = await supabaseClient
+    .from("customers")
+    .update(data)
+    .eq("id", id);
+
+  if(error){
+    alert("更新エラー：" + error.message);
+    return;
+  }
+
+  await saveAreaJudgement(data);
+
+  alert("更新しました");
+  clearInputs();
+  loadCustomers();
+}
+
+async function saveAreaJudgement(customerData){
+  if(!customerData.zipcode){
+    return;
+  }
+
+  const areaData = {
+    zipcode:customerData.zipcode,
+    address:customerData.address,
+    biglobe_1g:customerData.biglobe_1g,
+    biglobe_10g:customerData.biglobe_10g,
+    nuro_2g:customerData.nuro_2g,
+    nuro_10g:customerData.nuro_10g,
+    ntt_1g:customerData.ntt_1g,
+    ntt_10g:customerData.ntt_10g,
+    check_date:customerData.check_date,
+    area_memo:customerData.area_memo
+  };
+
+  const { data: existing, error: selectError } = await supabaseClient
+    .from("area_judgements")
+    .select("id")
+    .eq("zipcode", customerData.zipcode)
+    .order("created_at",{ascending:false})
+    .limit(1);
+
+  if(selectError){
+    console.log("判定DB確認エラー", selectError.message);
+    return;
+  }
+
+  if(existing && existing.length > 0){
+    await supabaseClient
+      .from("area_judgements")
+      .update(areaData)
+      .eq("id", existing[0].id);
+  }else{
+    await supabaseClient
+      .from("area_judgements")
+      .insert([areaData]);
+  }
+}
+
+function editCustomer(id){
+  const c = customers.find(item => String(item.id) === String(id));
+
+  if(!c){
+    alert("顧客が見つかりません");
+    return;
+  }
+
+  document.getElementById("editingId").value = c.id || "";
+  document.getElementById("name").value = c.name || "";
+  document.getElementById("phone").value = c.phone || "";
+  document.getElementById("zipcode").value = c.zipcode || "";
+  document.getElementById("address").value = c.address || "";
+  document.getElementById("staff").value = c.staff || "";
+  document.getElementById("status").value = c.status || "未対応";
+  document.getElementById("rank").value = c.rank || "C";
+  document.getElementById("biglobe_1g").value = c.biglobe_1g || "要確認";
+  document.getElementById("biglobe_10g").value = c.biglobe_10g || "要確認";
+  document.getElementById("nuro_2g").value = c.nuro_2g || "要確認";
+  document.getElementById("nuro_10g").value = c.nuro_10g || "要確認";
+  document.getElementById("ntt_1g").value = c.ntt_1g || "要確認";
+  document.getElementById("ntt_10g").value = c.ntt_10g || "要確認";
+  document.getElementById("check_date").value = c.check_date || "";
+  document.getElementById("area_memo").value = c.area_memo || "";
+  document.getElementById("memo").value = c.memo || "";
+
+  document.getElementById("areaDbMessage").innerText =
+    "編集中：修正後は「更新保存」を押してください";
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
 function clearInputs(){
+  document.getElementById("editingId").value = "";
+
   document.querySelectorAll("input").forEach(input=>{
     if(input.id !== "search" && input.type !== "file"){
       input.value = "";
@@ -341,7 +503,10 @@ function clearInputs(){
     document.getElementById(id).value = "要確認";
   });
 
+  document.getElementById("status").value = "未対応";
+  document.getElementById("rank").value = "A";
   document.getElementById("duplicateWarning").innerText = "";
+  document.getElementById("areaDbMessage").innerText = "";
 }
 
 function renderTable(){
@@ -388,7 +553,10 @@ function renderTable(){
         <a href="https://flets.com/" target="_blank">NTT</a><br>
         <a href="https://www.google.com/maps/search/${encodeURIComponent(c.address || "")}" target="_blank">地図</a>
       </td>
-      <td><button class="delete" onclick="deleteCustomer(${c.id})">削除</button></td>
+      <td>
+        <button class="check" onclick="editCustomer(${c.id})">編集</button><br>
+        <button class="delete" onclick="deleteCustomer(${c.id})">削除</button>
+      </td>
     </tr>
     `;
   });
@@ -523,6 +691,10 @@ async function importCSV(){
     if(error){
       alert("CSVインポートエラー：" + error.message);
       return;
+    }
+
+    for(const row of rows){
+      await saveAreaJudgement(row);
     }
 
     alert("CSVインポート完了");
