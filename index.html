@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>光回線 顧客管理ツール</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 body{font-family:sans-serif;background:#f5f5f5;margin:0;padding:20px;}
 .card{background:white;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
@@ -145,18 +147,8 @@ a{color:#2563eb;text-decoration:none;}
 <th>郵便番号</th>
 <th>住所</th>
 <th>担当者</th>
-<th>BIGLOBE 1G</th>
-<th>BIGLOBE 10G</th>
-<th>NURO 2G</th>
-<th>NURO 10G</th>
-<th>10G濃厚</th>
-<th>架電優先度</th>
 <th>対応状況</th>
 <th>ランク</th>
-<th>最終対応日</th>
-<th>次回連絡日</th>
-<th>商材メモ</th>
-<th>確認日</th>
 <th>確認メモ</th>
 <th>公式確認</th>
 <th>操作</th>
@@ -169,8 +161,15 @@ a{color:#2563eb;text-decoration:none;}
 </div>
 
 <script>
+const supabaseUrl = "https://diwaikaobyvxltqakilv.supabase.co";
+const supabaseKey = "sb_publishable_k5cj6-sQ7bV0CGV24_Hgcw_eld_RV2u";
+
+const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
 const LOGIN_ID = "admin";
 const LOGIN_PASS = "1234";
+
+let customers = [];
 
 function login(){
   const id = document.getElementById("loginId").value;
@@ -179,6 +178,7 @@ function login(){
   if(id === LOGIN_ID && pass === LOGIN_PASS){
     localStorage.setItem("loggedIn","true");
     showApp();
+    loadCustomers();
   }else{
     document.getElementById("loginError").innerText = "IDまたはパスワードが違います";
   }
@@ -196,14 +196,22 @@ function showApp(){
 
 if(localStorage.getItem("loggedIn") === "true"){
   showApp();
+  loadCustomers();
 }
 
-let customers = JSON.parse(localStorage.getItem("customers")) || [];
-let areaDB = JSON.parse(localStorage.getItem("areaDB")) || [];
+async function loadCustomers(){
+  const { data, error } = await supabaseClient
+    .from("customers")
+    .select("*")
+    .order("created_at", { ascending:false });
 
-function saveStorage(){
-  localStorage.setItem("customers", JSON.stringify(customers));
-  localStorage.setItem("areaDB", JSON.stringify(areaDB));
+  if(error){
+    alert("Supabase読み込みエラー：" + error.message);
+    return;
+  }
+
+  customers = data || [];
+  renderTable();
 }
 
 function cleanZip(zip){
@@ -213,16 +221,6 @@ function cleanZip(zip){
 function autoJudgeByZip(){
   const zip = cleanZip(document.getElementById("zipcode").value);
   const address = document.getElementById("address").value;
-  const found = areaDB.find(a => a.zipcode === zip);
-
-  if(found){
-    document.getElementById("biglobe1g").value = found.biglobe1g || "要確認";
-    document.getElementById("biglobe10g").value = found.biglobe10g || "要確認";
-    document.getElementById("nuro2g").value = found.nuro2g || "要確認";
-    document.getElementById("nuro10g").value = found.nuro10g || "要確認";
-    document.getElementById("checkDate").value = found.checkDate || "";
-  }
-
   checkDuplicate(zip,address);
 }
 
@@ -241,34 +239,7 @@ function checkDuplicate(zip,address){
     duplicate ? "注意：同じ郵便番号または住所の顧客が既にあります" : "";
 }
 
-function getStrong10G(biglobe10g,nuro10g,address){
-  if(biglobe10g === "提供中" || nuro10g === "提供中"){
-    return "◎ 10G濃厚";
-  }
-
-  if(
-    address.includes("東京都") ||
-    address.includes("大阪市") ||
-    address.includes("横浜市") ||
-    address.includes("名古屋市") ||
-    address.includes("札幌市中央区")
-  ){
-    return "○ 10G候補";
-  }
-
-  return "△ 要確認";
-}
-
-function getCallPriority(rank,strong10g,status){
-  if(status === "成約" || status === "失注") return "低";
-  if(rank === "A" && strong10g.includes("◎")) return "最優先";
-  if(rank === "A") return "高";
-  if(strong10g.includes("◎")) return "高";
-  if(rank === "B") return "中";
-  return "低";
-}
-
-function saveCustomer(){
+async function saveCustomer(){
   const data = {
     name:document.getElementById("name").value,
     phone:document.getElementById("phone").value,
@@ -277,44 +248,21 @@ function saveCustomer(){
     staff:document.getElementById("staff").value,
     status:document.getElementById("status").value,
     rank:document.getElementById("rank").value,
-    productMemo:document.getElementById("productMemo").value,
-    lastContactDate:document.getElementById("lastContactDate").value,
-    nextContactDate:document.getElementById("nextContactDate").value,
-    biglobe1g:document.getElementById("biglobe1g").value,
-    biglobe10g:document.getElementById("biglobe10g").value,
-    nuro2g:document.getElementById("nuro2g").value,
-    nuro10g:document.getElementById("nuro10g").value,
-    checkDate:document.getElementById("checkDate").value,
     memo:document.getElementById("memo").value
   };
 
-  data.strong10g = getStrong10G(data.biglobe10g,data.nuro10g,data.address);
-  data.callPriority = getCallPriority(data.rank,data.strong10g,data.status);
+  const { error } = await supabaseClient
+    .from("customers")
+    .insert([data]);
 
-  customers.push(data);
-
-  if(data.zipcode){
-    const index = areaDB.findIndex(a => a.zipcode === data.zipcode);
-    const areaData = {
-      zipcode:data.zipcode,
-      address:data.address,
-      biglobe1g:data.biglobe1g,
-      biglobe10g:data.biglobe10g,
-      nuro2g:data.nuro2g,
-      nuro10g:data.nuro10g,
-      checkDate:data.checkDate
-    };
-
-    if(index >= 0){
-      areaDB[index] = areaData;
-    }else{
-      areaDB.push(areaData);
-    }
+  if(error){
+    alert("保存エラー：" + error.message);
+    return;
   }
 
-  saveStorage();
-  renderTable();
+  alert("保存しました");
   clearInputs();
+  loadCustomers();
 }
 
 function clearInputs(){
@@ -323,16 +271,11 @@ function clearInputs(){
       input.value = "";
     }
   });
-
-  document.getElementById("biglobe1g").value = "要確認";
-  document.getElementById("biglobe10g").value = "要確認";
-  document.getElementById("nuro2g").value = "要確認";
-  document.getElementById("nuro10g").value = "要確認";
   document.getElementById("duplicateWarning").innerText = "";
 }
 
 function renderTable(){
-  const keyword = document.getElementById("search").value;
+  const keyword = document.getElementById("search").value || "";
   const tbody = document.getElementById("customerTable");
   tbody.innerHTML = "";
 
@@ -346,11 +289,8 @@ function renderTable(){
     (c.address || "").includes(keyword) ||
     (c.staff || "").includes(keyword)
   )
-  .forEach((c,index)=>{
+  .forEach((c)=>{
     if(c.status === "成約") monthlyClose++;
-
-    c.strong10g = c.strong10g || getStrong10G(c.biglobe10g,c.nuro10g,c.address);
-    c.callPriority = c.callPriority || getCallPriority(c.rank,c.strong10g,c.status);
 
     tbody.innerHTML += `
     <tr>
@@ -359,25 +299,15 @@ function renderTable(){
       <td>${c.zipcode || ""}</td>
       <td>${c.address || ""}</td>
       <td>${c.staff || ""}</td>
-      <td>${c.biglobe1g || ""}</td>
-      <td>${c.biglobe10g || ""}</td>
-      <td>${c.nuro2g || ""}</td>
-      <td>${c.nuro10g || ""}</td>
-      <td>${c.strong10g || ""}</td>
-      <td>${c.callPriority || ""}</td>
       <td><span class="status ${getStatusClass(c.status)}">${c.status || ""}</span></td>
       <td><span class="status ${getRankClass(c.rank)}">${c.rank || ""}</span></td>
-      <td>${c.lastContactDate || ""}</td>
-      <td>${c.nextContactDate || ""}</td>
-      <td>${c.productMemo || ""}</td>
-      <td>${c.checkDate || ""}</td>
       <td>${c.memo || ""}</td>
       <td>
         <a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/init?hikariarea=top" target="_blank">BIGLOBE</a><br>
         <a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">NURO</a><br>
         <a href="https://www.google.com/maps/search/${encodeURIComponent(c.address || "")}" target="_blank">地図</a>
       </td>
-      <td><button class="delete" onclick="deleteCustomer(${index})">削除</button></td>
+      <td><button class="delete" onclick="deleteCustomer(${c.id})">削除</button></td>
     </tr>
     `;
   });
@@ -400,12 +330,20 @@ function getRankClass(rank){
   return "rankC";
 }
 
-function deleteCustomer(index){
-  if(confirm("削除しますか？")){
-    customers.splice(index,1);
-    saveStorage();
-    renderTable();
+async function deleteCustomer(id){
+  if(!confirm("削除しますか？")) return;
+
+  const { error } = await supabaseClient
+    .from("customers")
+    .delete()
+    .eq("id", id);
+
+  if(error){
+    alert("削除エラー：" + error.message);
+    return;
   }
+
+  loadCustomers();
 }
 
 function csvEscape(value){
@@ -413,14 +351,12 @@ function csvEscape(value){
 }
 
 function exportCSV(){
-  let csv = "名前,電話番号,郵便番号,住所,担当者,BIGLOBE1G,BIGLOBE10G,NURO2G,NURO10G,10G濃厚,架電優先度,対応状況,ランク,最終対応日,次回連絡日,商材メモ,確認日,確認メモ\n";
+  let csv = "名前,電話番号,郵便番号,住所,担当者,対応状況,ランク,メモ\n";
 
   customers.forEach(c=>{
     csv += [
       c.name,c.phone,c.zipcode,c.address,c.staff,
-      c.biglobe1g,c.biglobe10g,c.nuro2g,c.nuro10g,
-      c.strong10g,c.callPriority,c.status,c.rank,
-      c.lastContactDate,c.nextContactDate,c.productMemo,c.checkDate,c.memo
+      c.status,c.rank,c.memo
     ].map(csvEscape).join(",") + "\n";
   });
 
@@ -457,7 +393,7 @@ function parseCSVLine(line){
   return result;
 }
 
-function importCSV(){
+async function importCSV(){
   const file = document.getElementById("csvFile").files[0];
 
   if(!file){
@@ -467,43 +403,36 @@ function importCSV(){
 
   const reader = new FileReader();
 
-  reader.onload = function(e){
+  reader.onload = async function(e){
     const lines = e.target.result.replace(/\r/g,"").split("\n").filter(line=>line.trim());
     lines.shift();
 
-    lines.forEach(line=>{
+    const rows = lines.map(line=>{
       const cols = parseCSVLine(line);
 
-      const data = {
+      return {
         name:cols[0] || "",
         phone:cols[1] || "",
         zipcode:cleanZip(cols[2] || ""),
         address:cols[3] || "",
         staff:cols[4] || "",
-        biglobe1g:cols[5] || "要確認",
-        biglobe10g:cols[6] || "要確認",
-        nuro2g:cols[7] || "要確認",
-        nuro10g:cols[8] || "要確認",
-        strong10g:cols[9] || "",
-        callPriority:cols[10] || "",
-        status:cols[11] || "未対応",
-        rank:cols[12] || "C",
-        lastContactDate:cols[13] || "",
-        nextContactDate:cols[14] || "",
-        productMemo:cols[15] || "",
-        checkDate:cols[16] || "",
-        memo:cols[17] || ""
+        status:cols[5] || "未対応",
+        rank:cols[6] || "C",
+        memo:cols[7] || ""
       };
-
-      data.strong10g = data.strong10g || getStrong10G(data.biglobe10g,data.nuro10g,data.address);
-      data.callPriority = data.callPriority || getCallPriority(data.rank,data.strong10g,data.status);
-
-      customers.push(data);
     });
 
-    saveStorage();
-    renderTable();
+    const { error } = await supabaseClient
+      .from("customers")
+      .insert(rows);
+
+    if(error){
+      alert("CSVインポートエラー：" + error.message);
+      return;
+    }
+
     alert("CSVインポート完了");
+    loadCustomers();
   };
 
   reader.readAsText(file, "UTF-8");
