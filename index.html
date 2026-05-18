@@ -60,7 +60,9 @@ a{color:#2563eb;text-decoration:none;}
 <div class="grid">
 <input id="name" placeholder="名前">
 <input id="phone" placeholder="電話番号">
-<input id="zipcode" placeholder="郵便番号" oninput="autoJudgeByZip()">
+
+<input id="zipcode" placeholder="郵便番号" oninput="handleZipInput()">
+
 <input id="address" placeholder="住所">
 
 <input id="staff" placeholder="担当者名">
@@ -172,7 +174,7 @@ async function login(){
   const email = document.getElementById("loginId").value;
   const password = document.getElementById("loginPass").value;
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
+  const { error } = await supabaseClient.auth.signInWithPassword({
     email: email,
     password: password
   });
@@ -227,10 +229,43 @@ function cleanZip(zip){
   return String(zip || "").replace(/[^0-9]/g,"");
 }
 
-function autoJudgeByZip(){
+async function handleZipInput(){
   const zip = cleanZip(document.getElementById("zipcode").value);
   const address = document.getElementById("address").value;
+
   checkDuplicate(zip,address);
+
+  if(zip.length !== 7){
+    return;
+  }
+
+  await autoFillAddress(zip);
+}
+
+async function autoFillAddress(zip){
+  try{
+    const response = await fetch(
+      `https://zipcloud.ibsnet.co.jp/api/search?zipcode=${zip}`
+    );
+
+    const data = await response.json();
+
+    if(data.status === 200 && data.results && data.results.length > 0){
+      const result = data.results[0];
+
+      const address =
+        result.address1 +
+        result.address2 +
+        result.address3;
+
+      document.getElementById("address").value = address;
+
+      checkDuplicate(zip,address);
+    }
+
+  }catch(error){
+    console.log("郵便番号検索エラー", error);
+  }
 }
 
 document.getElementById("address").addEventListener("input", function(){
@@ -280,6 +315,7 @@ function clearInputs(){
       input.value = "";
     }
   });
+
   document.getElementById("duplicateWarning").innerText = "";
 }
 
