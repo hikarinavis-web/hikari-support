@@ -16,6 +16,7 @@ button{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;margin:4px
 .import{background:#9333ea;color:white;}
 .delete{background:#ef4444;color:white;}
 .check{background:#2563eb;color:white;}
+.logout{background:#111827;color:white;float:right;}
 table{width:100%;border-collapse:collapse;background:white;}
 th,td{border:1px solid #ddd;padding:8px;font-size:13px;text-align:left;vertical-align:top;}
 th{background:#eee;}
@@ -28,12 +29,27 @@ th{background:#eee;}
 .rankB{background:#f59e0b;}
 .rankC{background:#ef4444;}
 .warning{color:#dc2626;font-weight:bold;}
+.login-box{max-width:400px;margin:100px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
+.hidden{display:none;}
 a{color:#2563eb;text-decoration:none;}
 </style>
 </head>
 
 <body>
 
+<div id="loginScreen" class="login-box">
+<h1>ログイン</h1>
+<input id="loginId" placeholder="ID">
+<br><br>
+<input id="loginPass" type="password" placeholder="パスワード">
+<br><br>
+<button class="add" onclick="login()">ログイン</button>
+<p id="loginError" class="warning"></p>
+</div>
+
+<div id="appScreen" class="hidden">
+
+<button class="logout" onclick="logout()">ログアウト</button>
 <h1>光回線 顧客管理ツール</h1>
 
 <div class="card">
@@ -150,7 +166,38 @@ a{color:#2563eb;text-decoration:none;}
 </table>
 </div>
 
+</div>
+
 <script>
+const LOGIN_ID = "admin";
+const LOGIN_PASS = "1234";
+
+function login(){
+  const id = document.getElementById("loginId").value;
+  const pass = document.getElementById("loginPass").value;
+
+  if(id === LOGIN_ID && pass === LOGIN_PASS){
+    localStorage.setItem("loggedIn","true");
+    showApp();
+  }else{
+    document.getElementById("loginError").innerText = "IDまたはパスワードが違います";
+  }
+}
+
+function logout(){
+  localStorage.removeItem("loggedIn");
+  location.reload();
+}
+
+function showApp(){
+  document.getElementById("loginScreen").classList.add("hidden");
+  document.getElementById("appScreen").classList.remove("hidden");
+}
+
+if(localStorage.getItem("loggedIn") === "true"){
+  showApp();
+}
+
 let customers = JSON.parse(localStorage.getItem("customers")) || [];
 let areaDB = JSON.parse(localStorage.getItem("areaDB")) || [];
 
@@ -166,7 +213,6 @@ function cleanZip(zip){
 function autoJudgeByZip(){
   const zip = cleanZip(document.getElementById("zipcode").value);
   const address = document.getElementById("address").value;
-
   const found = areaDB.find(a => a.zipcode === zip);
 
   if(found){
@@ -200,7 +246,13 @@ function getStrong10G(biglobe10g,nuro10g,address){
     return "◎ 10G濃厚";
   }
 
-  if(address.includes("東京都") || address.includes("大阪市") || address.includes("横浜市") || address.includes("名古屋市") || address.includes("札幌市中央区")){
+  if(
+    address.includes("東京都") ||
+    address.includes("大阪市") ||
+    address.includes("横浜市") ||
+    address.includes("名古屋市") ||
+    address.includes("札幌市中央区")
+  ){
     return "○ 10G候補";
   }
 
@@ -271,6 +323,7 @@ function clearInputs(){
       input.value = "";
     }
   });
+
   document.getElementById("biglobe1g").value = "要確認";
   document.getElementById("biglobe10g").value = "要確認";
   document.getElementById("nuro2g").value = "要確認";
