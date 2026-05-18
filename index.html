@@ -41,7 +41,7 @@ a{color:#2563eb;text-decoration:none;}
 
 <div id="loginScreen" class="login-box">
 <h1>ログイン</h1>
-<input id="loginId" placeholder="ID">
+<input id="loginId" placeholder="メールアドレス">
 <br><br>
 <input id="loginPass" type="password" placeholder="パスワード">
 <br><br>
@@ -166,26 +166,29 @@ const supabaseKey = "sb_publishable_k5cj6-sQ7bV0CGV24_Hgcw_eld_RV2u";
 
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-const LOGIN_ID = "admin";
-const LOGIN_PASS = "1234";
-
 let customers = [];
 
-function login(){
-  const id = document.getElementById("loginId").value;
-  const pass = document.getElementById("loginPass").value;
+async function login(){
+  const email = document.getElementById("loginId").value;
+  const password = document.getElementById("loginPass").value;
 
-  if(id === LOGIN_ID && pass === LOGIN_PASS){
-    localStorage.setItem("loggedIn","true");
-    showApp();
-    loadCustomers();
-  }else{
-    document.getElementById("loginError").innerText = "IDまたはパスワードが違います";
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: email,
+    password: password
+  });
+
+  if(error){
+    document.getElementById("loginError").innerText =
+      "ログインできません：" + error.message;
+    return;
   }
+
+  showApp();
+  loadCustomers();
 }
 
-function logout(){
-  localStorage.removeItem("loggedIn");
+async function logout(){
+  await supabaseClient.auth.signOut();
   location.reload();
 }
 
@@ -194,10 +197,16 @@ function showApp(){
   document.getElementById("appScreen").classList.remove("hidden");
 }
 
-if(localStorage.getItem("loggedIn") === "true"){
-  showApp();
-  loadCustomers();
+async function checkLogin(){
+  const { data } = await supabaseClient.auth.getSession();
+
+  if(data.session){
+    showApp();
+    loadCustomers();
+  }
 }
+
+checkLogin();
 
 async function loadCustomers(){
   const { data, error } = await supabaseClient
@@ -437,8 +446,6 @@ async function importCSV(){
 
   reader.readAsText(file, "UTF-8");
 }
-
-renderTable();
 </script>
 
 </body>
