@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>光回線 顧客管理ツール</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -65,7 +64,6 @@ a{color:#2563eb;text-decoration:none;}
 <input id="phone" placeholder="電話番号">
 <input id="zipcode" placeholder="郵便番号" oninput="handleZipInput()">
 <input id="address" placeholder="住所">
-
 <input id="staff" placeholder="担当者名">
 
 <select id="status">
@@ -92,18 +90,23 @@ a{color:#2563eb;text-decoration:none;}
 <option>要確認</option>
 <option>提供中</option>
 <option>未提供</option>
+<option>◎ 10G濃厚</option>
+<option>○ 10G候補</option>
 </select>
 
 <select id="nuro_2g">
 <option>要確認</option>
 <option>提供中</option>
 <option>未提供</option>
+<option>○ NURO候補</option>
 </select>
 
 <select id="nuro_10g">
 <option>要確認</option>
 <option>提供中</option>
 <option>未提供</option>
+<option>◎ NURO10G濃厚</option>
+<option>○ NURO10G候補</option>
 </select>
 
 <select id="ntt_area">
@@ -121,6 +124,8 @@ a{color:#2563eb;text-decoration:none;}
 <option>要確認</option>
 <option>提供中</option>
 <option>未提供</option>
+<option>◎ 10G濃厚</option>
+<option>○ 10G候補</option>
 </select>
 
 <input id="check_date" type="date">
@@ -144,6 +149,29 @@ a{color:#2563eb;text-decoration:none;}
 <a href="https://flets.com/flets-hikari/application/sim/" target="_blank"><button class="check">NTT東日本確認</button></a>
 <a href="https://flets.ntt-west.co.jp/area/areaSearch" target="_blank"><button class="check">NTT西日本確認</button></a>
 </p>
+</div>
+
+<div class="card">
+<h2>CSV一括仮判定・DB登録</h2>
+<p>郵便番号CSVを読み込むと、住所補完・NTT東西判定・10G候補・NURO候補を仮判定して area_judgements に保存します。</p>
+
+<input type="file" id="bulkJudgeCsv" accept=".csv">
+<button class="import" onclick="bulkJudgeAndSave()">一括仮判定してDB保存</button>
+<p id="bulkProgress">未実行</p>
+
+<table>
+<thead>
+<tr>
+<th>郵便番号</th>
+<th>住所</th>
+<th>NTT東西</th>
+<th>NTT 10G仮判定</th>
+<th>NURO仮判定</th>
+<th>保存状況</th>
+</tr>
+</thead>
+<tbody id="bulkJudgeTable"></tbody>
+</table>
 </div>
 
 <div class="card">
@@ -244,7 +272,7 @@ async function loadCustomers(){
 }
 
 function cleanZip(zip){
-  return String(zip || "").replace(/[^0-9]/g,"");
+  return String(zip || "").replace(/[^0-9]/g,"").padStart(7,"0");
 }
 
 function detectCarrier(phone){
@@ -278,12 +306,59 @@ function detectNttAreaFromAddress(address){
   ];
 
   for(const pref of west){
-    if(address.includes(pref)){
-      return "西日本";
-    }
+    if(address.includes(pref)) return "西日本";
   }
 
   return "東日本";
+}
+
+function judgeNtt10GCandidate(address){
+  if(!address) return "△ 住所未取得・要確認";
+
+  const strongAreas = [
+    "東京都","大阪市","横浜市","川崎市","名古屋市","福岡市",
+    "札幌市中央区","さいたま市","千葉市","京都市","神戸市"
+  ];
+
+  const candidateAreas = [
+    "札幌市","仙台市","新潟市","静岡市","浜松市","広島市",
+    "北九州市","熊本市","相模原市","堺市","岡山市"
+  ];
+
+  if(strongAreas.some(area => address.includes(area))) return "◎ 10G濃厚";
+  if(candidateAreas.some(area => address.includes(area))) return "○ 10G候補";
+  return "△ 要確認";
+}
+
+function judgeNuroCandidate(address){
+  if(!address) return { nuro2g:"要確認", nuro10g:"要確認", memo:"NURO：住所未取得" };
+
+  const nuroStrong = [
+    "東京都","神奈川県","埼玉県","千葉県",
+    "大阪府","兵庫県","京都府","奈良県",
+    "愛知県","静岡県","岐阜県","三重県",
+    "福岡県","佐賀県",
+    "北海道札幌市"
+  ];
+
+  const nuro10Strong = [
+    "東京都","神奈川県","埼玉県","千葉県",
+    "大阪市","名古屋市","福岡市","札幌市中央区"
+  ];
+
+  const nuro2g = nuroStrong.some(area => address.includes(area))
+    ? "○ NURO候補"
+    : "要確認";
+
+  const nuro10g = nuro10Strong.some(area => address.includes(area))
+    ? "○ NURO10G候補"
+    : "要確認";
+
+  return {
+    nuro2g,
+    nuro10g,
+    memo:`NURO仮判定：${nuro2g} / ${nuro10g}`
+  };
 }
 
 async function handleZipInput(){
@@ -300,13 +375,9 @@ async function handleZipInput(){
 
 async function autoFillAddress(zip){
   try{
-    const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${zip}`);
-    const data = await response.json();
+    const address = await getAddressFromZip(zip);
 
-    if(data.status === 200 && data.results && data.results.length > 0){
-      const result = data.results[0];
-      const address = result.address1 + result.address2 + result.address3;
-
+    if(address){
       if(!document.getElementById("address").value){
         document.getElementById("address").value = address;
       }
@@ -318,6 +389,22 @@ async function autoFillAddress(zip){
     }
   }catch(error){
     console.log("郵便番号検索エラー", error);
+  }
+}
+
+async function getAddressFromZip(zip){
+  try{
+    const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${zip}`);
+    const data = await response.json();
+
+    if(data.status === 200 && data.results && data.results.length > 0){
+      const r = data.results[0];
+      return r.address1 + r.address2 + r.address3;
+    }
+
+    return "";
+  }catch(error){
+    return "";
   }
 }
 
@@ -448,9 +535,7 @@ async function updateCustomer(){
 }
 
 async function saveAreaJudgement(customerData){
-  if(!customerData.zipcode){
-    return;
-  }
+  if(!customerData.zipcode) return;
 
   const areaData = {
     zipcode:customerData.zipcode,
@@ -544,9 +629,7 @@ function clearInputs(){
 }
 
 function getNttUrl(nttArea){
-  if(nttArea === "西日本"){
-    return "https://flets.ntt-west.co.jp/area/areaSearch";
-  }
+  if(nttArea === "西日本") return "https://flets.ntt-west.co.jp/area/areaSearch";
   return "https://flets.com/flets-hikari/application/sim/";
 }
 
@@ -749,6 +832,94 @@ async function importCSV(){
   };
 
   reader.readAsText(file,"UTF-8");
+}
+
+async function bulkJudgeAndSave(){
+  const file = document.getElementById("bulkJudgeCsv").files[0];
+
+  if(!file){
+    alert("CSVファイルを選択してください");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async function(e){
+    const text = e.target.result.replace(/\r/g,"");
+    const lines = text.split("\n").filter(line => line.trim());
+
+    let zips = [];
+
+    lines.forEach((line,index)=>{
+      const cols = parseCSVLine(line);
+
+      if(index === 0 && cols.join("").includes("郵便番号")) return;
+
+      const zip = cleanZip(cols[0] || cols[2] || "");
+
+      if(zip.length === 7) zips.push(zip);
+    });
+
+    zips = [...new Set(zips)];
+
+    const tbody = document.getElementById("bulkJudgeTable");
+    tbody.innerHTML = "";
+
+    document.getElementById("bulkProgress").innerText =
+      `判定開始：${zips.length}件`;
+
+    let count = 0;
+
+    for(const zip of zips){
+      count++;
+
+      document.getElementById("bulkProgress").innerText =
+        `${count} / ${zips.length} 件を処理中`;
+
+      const address = await getAddressFromZip(zip);
+      const nttArea = detectNttAreaFromAddress(address);
+      const ntt10g = judgeNtt10GCandidate(address);
+      const nuroJudge = judgeNuroCandidate(address);
+
+      const areaData = {
+        zipcode:zip,
+        address:address,
+        biglobe_1g:"要確認",
+        biglobe_10g:ntt10g,
+        nuro_2g:nuroJudge.nuro2g,
+        nuro_10g:nuroJudge.nuro10g,
+        ntt_area:nttArea,
+        ntt_1g:"要確認",
+        ntt_10g:ntt10g,
+        check_date:null,
+        area_memo:`${ntt10g} / ${nuroJudge.memo} / 自動仮判定`
+      };
+
+      await saveAreaJudgement(areaData);
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${zip}</td>
+          <td>${address}</td>
+          <td>${nttArea}</td>
+          <td>${ntt10g}</td>
+          <td>${nuroJudge.nuro2g} / ${nuroJudge.nuro10g}</td>
+          <td>保存済み</td>
+        </tr>
+      `;
+
+      await sleep(300);
+    }
+
+    document.getElementById("bulkProgress").innerText =
+      `完了：${zips.length}件を仮判定してDB保存しました`;
+  };
+
+  reader.readAsText(file,"UTF-8");
+}
+
+function sleep(ms){
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 </script>
 
