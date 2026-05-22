@@ -3,15 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>光回線 顧客管理ツール</title>
+
+<title>光回線 顧客管理ツール 完全版</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-body{font-family:sans-serif;background:#f5f5f5;margin:0;padding:20px;}
-.card{background:white;padding:20px;border-radius:12px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;}
-input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;}
-button{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;margin:4px;}
+
+body{
+  font-family:sans-serif;
+  background:#f5f5f5;
+  margin:0;
+  padding:20px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:20px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+  margin-bottom:12px;
+}
+
+input,select{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  box-sizing:border-box;
+}
+
+button{
+  padding:10px 16px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  margin:4px;
+}
+
 .add{background:#0070f3;color:white;}
 .update{background:#f59e0b;color:white;}
 .csv{background:#16a34a;color:white;}
@@ -20,50 +56,127 @@ button{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;margin:4px
 .check{background:#2563eb;color:white;}
 .logout{background:#111827;color:white;float:right;}
 .clear{background:#6b7280;color:white;}
-table{width:100%;border-collapse:collapse;background:white;}
-th,td{border:1px solid #ddd;padding:8px;font-size:13px;text-align:left;vertical-align:top;}
-th{background:#eee;}
-.status{padding:6px 10px;border-radius:16px;color:white;font-weight:bold;display:inline-block;}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:white;
+}
+
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  font-size:13px;
+  text-align:left;
+  vertical-align:top;
+}
+
+th{
+  background:#eee;
+}
+
+.status{
+  padding:6px 10px;
+  border-radius:16px;
+  color:white;
+  font-weight:bold;
+  display:inline-block;
+}
+
 .wait{background:#6b7280;}
 .line{background:#3b82f6;}
 .call{background:#f59e0b;}
 .close{background:#16a34a;}
+
 .rankA{background:#16a34a;}
 .rankB{background:#f59e0b;}
 .rankC{background:#ef4444;}
-.warning{color:#dc2626;font-weight:bold;}
-.success{color:#16a34a;font-weight:bold;}
-.login-box{max-width:400px;margin:100px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
-.hidden{display:none;}
-a{color:#2563eb;text-decoration:none;}
+
+.warning{
+  color:#dc2626;
+  font-weight:bold;
+}
+
+.success{
+  color:#16a34a;
+  font-weight:bold;
+}
+
+.login-box{
+  max-width:400px;
+  margin:100px auto;
+  background:white;
+  padding:30px;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+.hidden{
+  display:none;
+}
+
+a{
+  color:#2563eb;
+  text-decoration:none;
+}
+
 </style>
 </head>
 
 <body>
 
 <div id="loginScreen" class="login-box">
+
 <h1>ログイン</h1>
-<input id="loginId" placeholder="メールアドレス"><br><br>
-<input id="loginPass" type="password" placeholder="パスワード"><br><br>
-<button class="add" onclick="login()">ログイン</button>
+
+<input id="loginId" placeholder="メールアドレス">
+
+<br><br>
+
+<input id="loginPass" type="password" placeholder="パスワード">
+
+<br><br>
+
+<button class="add" onclick="login()">
+ログイン
+</button>
+
 <p id="loginError" class="warning"></p>
+
 </div>
 
 <div id="appScreen" class="hidden">
 
-<button class="logout" onclick="logout()">ログアウト</button>
-<h1>光回線 顧客管理ツール</h1>
+<button class="logout" onclick="logout()">
+ログアウト
+</button>
+
+<h1>光回線 顧客管理ツール 完全版</h1>
 
 <div class="card">
+
 <h2>顧客登録・編集</h2>
 
 <input type="hidden" id="editingId">
 
 <div class="grid">
-<input id="name" placeholder="名前">
-<input id="phone" placeholder="電話番号">
+
+<input id="name" placeholder="お客様名（漢字）">
+
+<input id="name_kana" placeholder="お客様名（カナ）">
+
+<input id="mobile_phone" placeholder="連絡先">
+
+<input id="home_phone" placeholder="固定電話番号">
+
+<input id="birthday" type="date">
+
 <input id="zipcode" placeholder="郵便番号" oninput="handleZipInput()">
+
 <input id="address" placeholder="住所">
+
+<input id="open_date" type="date">
+
 <input id="staff" placeholder="担当者名">
 
 <select id="status">
@@ -78,12 +191,6 @@ a{color:#2563eb;text-decoration:none;}
 <option>A</option>
 <option>B</option>
 <option>C</option>
-</select>
-
-<select id="biglobe_1g">
-<option>要確認</option>
-<option>提供中</option>
-<option>未提供</option>
 </select>
 
 <select id="biglobe_10g">
@@ -114,12 +221,6 @@ a{color:#2563eb;text-decoration:none;}
 <option>西日本</option>
 </select>
 
-<select id="ntt_1g">
-<option>要確認</option>
-<option>提供中</option>
-<option>未提供</option>
-</select>
-
 <select id="ntt_10g">
 <option>要確認</option>
 <option>提供中</option>
@@ -129,798 +230,861 @@ a{color:#2563eb;text-decoration:none;}
 </select>
 
 <input id="check_date" type="date">
+
 <input id="area_memo" placeholder="エリア判定メモ">
+
 <input id="memo" placeholder="顧客メモ">
+
 </div>
 
 <p id="duplicateWarning" class="warning"></p>
+
 <p id="areaDbMessage" class="success"></p>
 
-<button class="add" onclick="saveCustomer()">新規保存</button>
-<button class="update" onclick="updateCustomer()">更新保存</button>
-<button class="clear" onclick="clearInputs()">入力クリア</button>
-<button class="csv" onclick="exportCSV()">CSV出力</button>
+<button class="add" onclick="saveCustomer()">
+新規保存
+</button>
+
+<button class="update" onclick="updateCustomer()">
+更新保存
+</button>
+
+<button class="clear" onclick="clearInputs()">
+入力クリア
+</button>
+
+<button class="csv" onclick="exportCSV()">
+CSV出力
+</button>
+
 <input type="file" id="csvFile" accept=".csv">
-<button class="import" onclick="importCSV()">CSVインポート</button>
 
-<p>
-<a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/init?hikariarea=top" target="_blank"><button class="check">BIGLOBE確認</button></a>
-<a href="https://nuro.jp/area/area_search/index_a.html" target="_blank"><button class="check">NURO確認</button></a>
-<a href="https://flets.com/flets-hikari/application/sim/" target="_blank"><button class="check">NTT東日本確認</button></a>
-<a href="https://flets.ntt-west.co.jp/area/areaSearch" target="_blank"><button class="check">NTT西日本確認</button></a>
-</p>
+<button class="import" onclick="bulkImportCustomers()">
+5000件CSVインポート
+</button>
+
 </div>
 
 <div class="card">
-<h2>CSV一括仮判定・DB登録</h2>
-<p>郵便番号CSVを読み込むと、住所補完・NTT東西判定・10G候補・NURO候補を仮判定して area_judgements に保存します。</p>
 
-<input type="file" id="bulkJudgeCsv" accept=".csv">
-<button class="import" onclick="bulkJudgeAndSave()">一括仮判定してDB保存</button>
-<p id="bulkProgress">未実行</p>
-
-<table>
-<thead>
-<tr>
-<th>郵便番号</th>
-<th>住所</th>
-<th>NTT東西</th>
-<th>NTT 10G仮判定</th>
-<th>NURO仮判定</th>
-<th>保存状況</th>
-</tr>
-</thead>
-<tbody id="bulkJudgeTable"></tbody>
-</table>
-</div>
-
-<div class="card">
-<h2>検索・集計</h2>
-<input id="search" placeholder="検索" oninput="renderTable()">
-<p id="summary">件数：0件 / 今月成約：0件</p>
-</div>
-
-<div class="card">
 <h2>顧客一覧</h2>
+
+<input id="search" placeholder="検索" oninput="renderTable()">
+
+<br><br>
+
 <table>
+
 <thead>
+
 <tr>
+
 <th>名前</th>
-<th>電話番号</th>
-<th>推定キャリア</th>
+<th>カナ</th>
+<th>連絡先</th>
+<th>固定電話</th>
+<th>生年月日</th>
+<th>キャリア</th>
 <th>郵便番号</th>
 <th>住所</th>
-<th>担当者</th>
-<th>BIGLOBE 1G</th>
-<th>BIGLOBE 10G</th>
-<th>NURO 2G</th>
-<th>NURO 10G</th>
+<th>開通日</th>
+<th>架電時期</th>
+<th>スコア</th>
+<th>優先度</th>
+<th>BIGLOBE10G</th>
+<th>NURO2G</th>
+<th>NURO10G</th>
 <th>NTT東西</th>
-<th>NTT 1G</th>
-<th>NTT 10G</th>
-<th>確認日</th>
-<th>エリアメモ</th>
+<th>NTT10G</th>
 <th>対応状況</th>
 <th>ランク</th>
-<th>顧客メモ</th>
-<th>公式確認</th>
+<th>メモ</th>
 <th>操作</th>
+
 </tr>
+
 </thead>
+
 <tbody id="customerTable"></tbody>
+
 </table>
+
 </div>
 
 </div>
 
 <script>
-const supabaseUrl = "https://diwaikaobyvxltqakilv.supabase.co";
-const supabaseKey = "sb_publishable_k5cj6-sQ7bV0CGV24_Hgcw_eld_RV2u";
-const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+const supabaseUrl =
+"https://YOUR_PROJECT.supabase.co";
+
+const supabaseKey =
+"sb_publishable_k5cj6-sQ7bV0CGV24_Hgcw_eld_RV2u";
+
+const supabaseClient =
+supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+);
 
 let customers = [];
 
 async function login(){
-  const email = document.getElementById("loginId").value;
-  const password = document.getElementById("loginPass").value;
 
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  const email =
+    document.getElementById("loginId").value;
+
+  const password =
+    document.getElementById("loginPass").value;
+
+  const { error } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
 
   if(error){
-    document.getElementById("loginError").innerText = "ログインできません：" + error.message;
+
+    document.getElementById("loginError")
+      .innerText =
+      "ログイン失敗：" + error.message;
+
     return;
   }
 
   showApp();
+
   loadCustomers();
 }
 
 async function logout(){
+
   await supabaseClient.auth.signOut();
+
   location.reload();
 }
 
 function showApp(){
-  document.getElementById("loginScreen").classList.add("hidden");
-  document.getElementById("appScreen").classList.remove("hidden");
+
+  loginScreen.classList.add("hidden");
+
+  appScreen.classList.remove("hidden");
 }
 
 async function checkLogin(){
-  const { data } = await supabaseClient.auth.getSession();
+
+  const { data } =
+    await supabaseClient.auth.getSession();
 
   if(data.session){
+
     showApp();
+
     loadCustomers();
   }
 }
 
 checkLogin();
 
-async function loadCustomers(){
-  const { data, error } = await supabaseClient
-    .from("customers")
-    .select("*")
-    .order("created_at",{ascending:false});
-
-  if(error){
-    alert("読み込みエラー：" + error.message);
-    return;
-  }
-
-  customers = data || [];
-  renderTable();
-}
-
 function cleanZip(zip){
-  return String(zip || "").replace(/[^0-9]/g,"").padStart(7,"0");
+
+  return String(zip || "")
+    .replace(/[^0-9]/g,"")
+    .padStart(7,"0")
+    .slice(-7);
 }
 
 function detectCarrier(phone){
-  const num = String(phone || "").replace(/[^0-9]/g,"");
-  const prefix4 = num.substring(0,4);
 
-  const carrierMap = {
-    "0901":"docomo系","0902":"docomo系","0903":"au系","0904":"SoftBank系",
-    "0905":"au系","0906":"docomo系","0907":"SoftBank系","0908":"au系","0909":"docomo系",
-    "0801":"docomo系","0802":"au系","0803":"SoftBank系","0804":"SoftBank系",
-    "0805":"au系","0806":"docomo系","0807":"楽天/格安SIM系","0808":"SoftBank系","0809":"docomo系",
-    "0701":"楽天/格安SIM系","0702":"楽天/格安SIM系","0703":"SoftBank系",
-    "0704":"au系","0705":"docomo系","0706":"楽天/格安SIM系","0707":"楽天/格安SIM系",
-    "0708":"楽天/格安SIM系","0709":"楽天/格安SIM系"
-  };
+  const num =
+    String(phone || "")
+      .replace(/[^0-9]/g,"");
 
-  if(carrierMap[prefix4]) return carrierMap[prefix4];
-  if(num.startsWith("090")) return "大手キャリア系";
-  if(num.startsWith("080")) return "大手/格安SIM系";
-  if(num.startsWith("070")) return "楽天/格安SIM系";
+  if(num.startsWith("070"))
+    return "楽天/格安SIM系";
+
+  if(num.startsWith("080"))
+    return "大手/格安SIM系";
+
+  if(num.startsWith("090"))
+    return "大手キャリア系";
+
   return "不明";
 }
 
-function detectNttAreaFromAddress(address){
+function detectNttArea(address){
+
   const west = [
-    "富山県","石川県","福井県","岐阜県","静岡県","愛知県","三重県",
-    "滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県",
-    "鳥取県","島根県","岡山県","広島県","山口県",
-    "徳島県","香川県","愛媛県","高知県",
-    "福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"
+    "大阪府","京都府","兵庫県",
+    "奈良県","愛知県","福岡県"
   ];
 
-  for(const pref of west){
-    if(address.includes(pref)) return "西日本";
-  }
-
-  return "東日本";
+  return west.some(w => address.includes(w))
+    ? "西日本"
+    : "東日本";
 }
 
-function judgeNtt10GCandidate(address){
-  if(!address) return "△ 住所未取得・要確認";
+function judge10G(address){
 
-  const strongAreas = [
-    "東京都","大阪市","横浜市","川崎市","名古屋市","福岡市",
-    "札幌市中央区","さいたま市","千葉市","京都市","神戸市"
+  const strong = [
+    "東京都","大阪市","横浜市",
+    "名古屋市","福岡市"
   ];
 
-  const candidateAreas = [
-    "札幌市","仙台市","新潟市","静岡市","浜松市","広島市",
-    "北九州市","熊本市","相模原市","堺市","岡山市"
-  ];
+  if(strong.some(a => address.includes(a)))
+    return "◎ 10G濃厚";
 
-  if(strongAreas.some(area => address.includes(area))) return "◎ 10G濃厚";
-  if(candidateAreas.some(area => address.includes(area))) return "○ 10G候補";
-  return "△ 要確認";
+  return "○ 10G候補";
 }
 
-function judgeNuroCandidate(address){
-  if(!address) return { nuro2g:"要確認", nuro10g:"要確認", memo:"NURO：住所未取得" };
+function judgeNuro(address){
 
-  const nuroStrong = [
-    "東京都","神奈川県","埼玉県","千葉県",
-    "大阪府","兵庫県","京都府","奈良県",
-    "愛知県","静岡県","岐阜県","三重県",
-    "福岡県","佐賀県",
-    "北海道札幌市"
+  const nuro = [
+    "東京都","神奈川県","埼玉県",
+    "千葉県","大阪府","愛知県"
   ];
 
-  const nuro10Strong = [
-    "東京都","神奈川県","埼玉県","千葉県",
-    "大阪市","名古屋市","福岡市","札幌市中央区"
-  ];
-
-  const nuro2g = nuroStrong.some(area => address.includes(area))
+  return nuro.some(a => address.includes(a))
     ? "○ NURO候補"
     : "要確認";
+}
 
-  const nuro10g = nuro10Strong.some(area => address.includes(area))
-    ? "○ NURO10G候補"
-    : "要確認";
+function getCallTiming(openDate){
 
-  return {
-    nuro2g,
-    nuro10g,
-    memo:`NURO仮判定：${nuro2g} / ${nuro10g}`
-  };
+  if(!openDate)
+    return "要確認";
+
+  const d = new Date(openDate);
+
+  const now = new Date();
+
+  const months =
+    (now.getFullYear() - d.getFullYear()) * 12
+    + now.getMonth()
+    - d.getMonth();
+
+  if(months >= 24)
+    return "今すぐ架電";
+
+  if(months >= 18)
+    return "優先架電";
+
+  return "通常";
+}
+
+function getScore(c){
+
+  let score = 0;
+
+  if(c.biglobe_10g.includes("◎"))
+    score += 40;
+
+  if(c.nuro_10g.includes("◎"))
+    score += 40;
+
+  if(c.ntt_10g.includes("◎"))
+    score += 30;
+
+  if(getCallTiming(c.open_date)
+      === "今すぐ架電")
+    score += 20;
+
+  return score;
+}
+
+function getPriority(score){
+
+  if(score >= 70)
+    return "S 最優先";
+
+  if(score >= 50)
+    return "A 優先";
+
+  if(score >= 30)
+    return "B 通常";
+
+  return "C 低";
 }
 
 async function handleZipInput(){
-  const zip = cleanZip(document.getElementById("zipcode").value);
-  const address = document.getElementById("address").value;
 
-  checkDuplicate(zip,address);
+  const zip =
+    cleanZip(zipcode.value);
 
-  if(zip.length === 7){
-    await autoFillAddress(zip);
-    await applyAreaJudgement(zip);
-  }
-}
+  if(zip.length !== 7)
+    return;
 
-async function autoFillAddress(zip){
-  try{
-    const address = await getAddressFromZip(zip);
+  const addressData =
+    await getAddressFromZip(zip);
 
-    if(address){
-      if(!document.getElementById("address").value){
-        document.getElementById("address").value = address;
-      }
+  if(addressData && !address.value)
+    address.value = addressData;
 
-      const finalAddress = document.getElementById("address").value;
-      document.getElementById("ntt_area").value = detectNttAreaFromAddress(finalAddress);
+  ntt_area.value =
+    detectNttArea(address.value);
 
-      checkDuplicate(zip,finalAddress);
-    }
-  }catch(error){
-    console.log("郵便番号検索エラー", error);
-  }
+  biglobe_10g.value =
+    judge10G(address.value);
+
+  nuro_2g.value =
+    judgeNuro(address.value);
+
+  nuro_10g.value =
+    judgeNuro(address.value);
+
+  ntt_10g.value =
+    judge10G(address.value);
+
+  checkDuplicate(zip,address.value);
 }
 
 async function getAddressFromZip(zip){
-  try{
-    const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${zip}`);
-    const data = await response.json();
 
-    if(data.status === 200 && data.results && data.results.length > 0){
-      const r = data.results[0];
-      return r.address1 + r.address2 + r.address3;
+  try{
+
+    const res =
+      await fetch(
+        `https://zipcloud.ibsnet.co.jp/api/search?zipcode=${zip}`
+      );
+
+    const json =
+      await res.json();
+
+    if(json.results){
+
+      const a =
+        json.results[0];
+
+      return a.address1
+        + a.address2
+        + a.address3;
     }
 
-    return "";
-  }catch(error){
-    return "";
-  }
+  }catch(e){}
+
+  return "";
 }
 
-async function applyAreaJudgement(zip){
-  const { data, error } = await supabaseClient
-    .from("area_judgements")
-    .select("*")
-    .eq("zipcode", zip)
-    .order("created_at",{ascending:false})
-    .limit(1);
+function checkDuplicate(zip,addressText){
 
-  if(error){
-    console.log("判定DB取得エラー", error.message);
-    return;
-  }
+  const dup =
+    customers.find(c =>
+      c.zipcode === zip
+      || c.address === addressText
+    );
 
-  if(data && data.length > 0){
-    const area = data[0];
-
-    document.getElementById("biglobe_1g").value = area.biglobe_1g || "要確認";
-    document.getElementById("biglobe_10g").value = area.biglobe_10g || "要確認";
-    document.getElementById("nuro_2g").value = area.nuro_2g || "要確認";
-    document.getElementById("nuro_10g").value = area.nuro_10g || "要確認";
-    document.getElementById("ntt_area").value = area.ntt_area || "東日本";
-    document.getElementById("ntt_1g").value = area.ntt_1g || "要確認";
-    document.getElementById("ntt_10g").value = area.ntt_10g || "要確認";
-    document.getElementById("check_date").value = area.check_date || "";
-    document.getElementById("area_memo").value = area.area_memo || "";
-
-    document.getElementById("areaDbMessage").innerText =
-      "判定DBから自動反映しました";
-  }else{
-    document.getElementById("areaDbMessage").innerText =
-      "この郵便番号は判定DB未登録です";
-  }
-}
-
-document.getElementById("address").addEventListener("input",function(){
-  const zip = cleanZip(document.getElementById("zipcode").value);
-  checkDuplicate(zip,this.value);
-  document.getElementById("ntt_area").value = detectNttAreaFromAddress(this.value);
-});
-
-function checkDuplicate(zip,address){
-  const editingId = document.getElementById("editingId").value;
-
-  const duplicate = customers.find(c =>
-    String(c.id) !== String(editingId) &&
-    (
-      cleanZip(c.zipcode) === zip ||
-      (address && c.address === address)
-    )
-  );
-
-  document.getElementById("duplicateWarning").innerText =
-    duplicate ? "注意：同じ郵便番号または住所の顧客があります" : "";
+  duplicateWarning.innerText =
+    dup
+    ? "同一住所・郵便番号あり"
+    : "";
 }
 
 function getFormData(){
-  const phone = document.getElementById("phone").value;
 
   return {
-    name:document.getElementById("name").value,
-    phone:phone,
-    carrier:detectCarrier(phone),
-    zipcode:cleanZip(document.getElementById("zipcode").value),
-    address:document.getElementById("address").value,
-    staff:document.getElementById("staff").value,
-    status:document.getElementById("status").value,
-    rank:document.getElementById("rank").value,
-    biglobe_1g:document.getElementById("biglobe_1g").value,
-    biglobe_10g:document.getElementById("biglobe_10g").value,
-    nuro_2g:document.getElementById("nuro_2g").value,
-    nuro_10g:document.getElementById("nuro_10g").value,
-    ntt_area:document.getElementById("ntt_area").value,
-    ntt_1g:document.getElementById("ntt_1g").value,
-    ntt_10g:document.getElementById("ntt_10g").value,
-    check_date:document.getElementById("check_date").value || null,
-    area_memo:document.getElementById("area_memo").value,
-    memo:document.getElementById("memo").value
+
+    name:name.value,
+
+    name_kana:name_kana.value,
+
+    mobile_phone:mobile_phone.value,
+
+    home_phone:home_phone.value,
+
+    birthday:birthday.value || null,
+
+    carrier:
+      detectCarrier(
+        mobile_phone.value
+      ),
+
+    zipcode:
+      cleanZip(zipcode.value),
+
+    address:address.value,
+
+    open_date:
+      open_date.value || null,
+
+    staff:staff.value,
+
+    status:status.value,
+
+    rank:rank.value,
+
+    biglobe_10g:
+      biglobe_10g.value,
+
+    nuro_2g:
+      nuro_2g.value,
+
+    nuro_10g:
+      nuro_10g.value,
+
+    ntt_area:
+      ntt_area.value,
+
+    ntt_10g:
+      ntt_10g.value,
+
+    check_date:
+      check_date.value || null,
+
+    area_memo:
+      area_memo.value,
+
+    memo:
+      memo.value
   };
 }
 
 async function saveCustomer(){
-  const data = getFormData();
 
-  const { error } = await supabaseClient
-    .from("customers")
-    .insert([data]);
+  const data =
+    getFormData();
+
+  const { error } =
+    await supabaseClient
+      .from("customers")
+      .insert([data]);
 
   if(error){
-    alert("保存エラー：" + error.message);
+
+    alert(error.message);
+
     return;
   }
 
-  await saveAreaJudgement(data);
+  alert("保存完了");
 
-  alert("保存しました");
   clearInputs();
+
   loadCustomers();
 }
 
 async function updateCustomer(){
-  const id = document.getElementById("editingId").value;
+
+  const id =
+    editingId.value;
 
   if(!id){
-    alert("編集する顧客を選んでください");
+
+    alert("編集対象なし");
+
     return;
   }
 
-  const data = getFormData();
+  const data =
+    getFormData();
 
-  const { error } = await supabaseClient
-    .from("customers")
-    .update(data)
-    .eq("id", id);
+  const { error } =
+    await supabaseClient
+      .from("customers")
+      .update(data)
+      .eq("id",id);
 
   if(error){
-    alert("更新エラー：" + error.message);
+
+    alert(error.message);
+
     return;
   }
 
-  await saveAreaJudgement(data);
+  alert("更新完了");
 
-  alert("更新しました");
   clearInputs();
+
   loadCustomers();
 }
 
-async function saveAreaJudgement(customerData){
-  if(!customerData.zipcode) return;
+async function loadCustomers(){
 
-  const areaData = {
-    zipcode:customerData.zipcode,
-    address:customerData.address,
-    biglobe_1g:customerData.biglobe_1g,
-    biglobe_10g:customerData.biglobe_10g,
-    nuro_2g:customerData.nuro_2g,
-    nuro_10g:customerData.nuro_10g,
-    ntt_area:customerData.ntt_area,
-    ntt_1g:customerData.ntt_1g,
-    ntt_10g:customerData.ntt_10g,
-    check_date:customerData.check_date,
-    area_memo:customerData.area_memo
-  };
+  const { data,error } =
+    await supabaseClient
+      .from("customers")
+      .select("*")
+      .order("created_at",
+        {ascending:false});
 
-  const { data: existing, error: selectError } = await supabaseClient
-    .from("area_judgements")
-    .select("id")
-    .eq("zipcode", customerData.zipcode)
-    .order("created_at",{ascending:false})
-    .limit(1);
+  if(error){
 
-  if(selectError){
-    console.log("判定DB確認エラー", selectError.message);
+    alert(error.message);
+
     return;
   }
 
-  if(existing && existing.length > 0){
-    await supabaseClient
-      .from("area_judgements")
-      .update(areaData)
-      .eq("id", existing[0].id);
-  }else{
-    await supabaseClient
-      .from("area_judgements")
-      .insert([areaData]);
-  }
-}
+  customers =
+    data || [];
 
-function editCustomer(id){
-  const c = customers.find(item => String(item.id) === String(id));
-
-  if(!c){
-    alert("顧客が見つかりません");
-    return;
-  }
-
-  document.getElementById("editingId").value = c.id || "";
-  document.getElementById("name").value = c.name || "";
-  document.getElementById("phone").value = c.phone || "";
-  document.getElementById("zipcode").value = c.zipcode || "";
-  document.getElementById("address").value = c.address || "";
-  document.getElementById("staff").value = c.staff || "";
-  document.getElementById("status").value = c.status || "未対応";
-  document.getElementById("rank").value = c.rank || "C";
-  document.getElementById("biglobe_1g").value = c.biglobe_1g || "要確認";
-  document.getElementById("biglobe_10g").value = c.biglobe_10g || "要確認";
-  document.getElementById("nuro_2g").value = c.nuro_2g || "要確認";
-  document.getElementById("nuro_10g").value = c.nuro_10g || "要確認";
-  document.getElementById("ntt_area").value = c.ntt_area || detectNttAreaFromAddress(c.address || "");
-  document.getElementById("ntt_1g").value = c.ntt_1g || "要確認";
-  document.getElementById("ntt_10g").value = c.ntt_10g || "要確認";
-  document.getElementById("check_date").value = c.check_date || "";
-  document.getElementById("area_memo").value = c.area_memo || "";
-  document.getElementById("memo").value = c.memo || "";
-
-  document.getElementById("areaDbMessage").innerText =
-    "編集中：修正後は「更新保存」を押してください";
-
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function clearInputs(){
-  document.getElementById("editingId").value = "";
-
-  document.querySelectorAll("input").forEach(input=>{
-    if(input.id !== "search" && input.type !== "file"){
-      input.value = "";
-    }
-  });
-
-  ["biglobe_1g","biglobe_10g","nuro_2g","nuro_10g","ntt_1g","ntt_10g"].forEach(id=>{
-    document.getElementById(id).value = "要確認";
-  });
-
-  document.getElementById("ntt_area").value = "東日本";
-  document.getElementById("status").value = "未対応";
-  document.getElementById("rank").value = "A";
-  document.getElementById("duplicateWarning").innerText = "";
-  document.getElementById("areaDbMessage").innerText = "";
-}
-
-function getNttUrl(nttArea){
-  if(nttArea === "西日本") return "https://flets.ntt-west.co.jp/area/areaSearch";
-  return "https://flets.com/flets-hikari/application/sim/";
+  renderTable();
 }
 
 function renderTable(){
-  const keyword = document.getElementById("search").value || "";
-  const tbody = document.getElementById("customerTable");
-  tbody.innerHTML = "";
 
-  let monthlyClose = 0;
+  const keyword =
+    search.value || "";
+
+  customerTable.innerHTML = "";
 
   customers
-  .filter(c =>
-    (c.name || "").includes(keyword) ||
-    (c.phone || "").includes(keyword) ||
-    (c.carrier || "").includes(keyword) ||
-    (c.address || "").includes(keyword) ||
-    (c.zipcode || "").includes(keyword) ||
-    (c.staff || "").includes(keyword)
-  )
-  .forEach(c => {
-    if(c.status === "成約") monthlyClose++;
+    .filter(c =>
 
-    const nttLabel = c.ntt_area === "西日本" ? "NTT西日本" : "NTT東日本";
-    const nttUrl = getNttUrl(c.ntt_area);
+      (c.name || "")
+        .includes(keyword)
 
-    tbody.innerHTML += `
-    <tr>
-      <td>${c.name || ""}</td>
-      <td>${c.phone || ""}</td>
-      <td>${c.carrier || ""}</td>
-      <td>${c.zipcode || ""}</td>
-      <td>${c.address || ""}</td>
-      <td>${c.staff || ""}</td>
-      <td>${c.biglobe_1g || ""}</td>
-      <td>${c.biglobe_10g || ""}</td>
-      <td>${c.nuro_2g || ""}</td>
-      <td>${c.nuro_10g || ""}</td>
-      <td>${c.ntt_area || ""}</td>
-      <td>${c.ntt_1g || ""}</td>
-      <td>${c.ntt_10g || ""}</td>
-      <td>${c.check_date || ""}</td>
-      <td>${c.area_memo || ""}</td>
-      <td><span class="status ${getStatusClass(c.status)}">${c.status || ""}</span></td>
-      <td><span class="status ${getRankClass(c.rank)}">${c.rank || ""}</span></td>
-      <td>${c.memo || ""}</td>
-      <td>
-        <a href="https://order.sso.biglobe.ne.jp/fixed/hikari/check-area/init?hikariarea=top" target="_blank">BIGLOBE</a><br>
-        <a href="https://nuro.jp/area/area_search/index_a.html" target="_blank">NURO</a><br>
-        <a href="${nttUrl}" target="_blank">${nttLabel}</a><br>
-        <a href="https://www.google.com/maps/search/${encodeURIComponent(c.address || "")}" target="_blank">地図</a>
-      </td>
-      <td>
-        <button class="check" onclick="editCustomer(${c.id})">編集</button><br>
-        <button class="delete" onclick="deleteCustomer(${c.id})">削除</button>
-      </td>
-    </tr>
-    `;
+      ||
+
+      (c.address || "")
+        .includes(keyword)
+    )
+
+    .forEach(c => {
+
+      const score =
+        getScore(c);
+
+      const priority =
+        getPriority(score);
+
+      customerTable.innerHTML += `
+
+<tr>
+
+<td>${c.name || ""}</td>
+
+<td>${c.name_kana || ""}</td>
+
+<td>${c.mobile_phone || ""}</td>
+
+<td>${c.home_phone || ""}</td>
+
+<td>${c.birthday || ""}</td>
+
+<td>${c.carrier || ""}</td>
+
+<td>${c.zipcode || ""}</td>
+
+<td>${c.address || ""}</td>
+
+<td>${c.open_date || ""}</td>
+
+<td>${getCallTiming(c.open_date)}</td>
+
+<td>${score}</td>
+
+<td>${priority}</td>
+
+<td>${c.biglobe_10g || ""}</td>
+
+<td>${c.nuro_2g || ""}</td>
+
+<td>${c.nuro_10g || ""}</td>
+
+<td>${c.ntt_area || ""}</td>
+
+<td>${c.ntt_10g || ""}</td>
+
+<td>${c.status || ""}</td>
+
+<td>${c.rank || ""}</td>
+
+<td>${c.memo || ""}</td>
+
+<td>
+
+<button
+class="check"
+onclick="editCustomer(${c.id})">
+
+編集
+
+</button>
+
+<button
+class="delete"
+onclick="deleteCustomer(${c.id})">
+
+削除
+
+</button>
+
+</td>
+
+</tr>
+`;
+    });
+}
+
+function editCustomer(id){
+
+  const c =
+    customers.find(x =>
+      x.id === id
+    );
+
+  if(!c)
+    return;
+
+  editingId.value =
+    c.id;
+
+  name.value =
+    c.name || "";
+
+  name_kana.value =
+    c.name_kana || "";
+
+  mobile_phone.value =
+    c.mobile_phone || "";
+
+  home_phone.value =
+    c.home_phone || "";
+
+  birthday.value =
+    c.birthday || "";
+
+  zipcode.value =
+    c.zipcode || "";
+
+  address.value =
+    c.address || "";
+
+  open_date.value =
+    c.open_date || "";
+
+  staff.value =
+    c.staff || "";
+
+  status.value =
+    c.status || "未対応";
+
+  rank.value =
+    c.rank || "A";
+
+  biglobe_10g.value =
+    c.biglobe_10g || "要確認";
+
+  nuro_2g.value =
+    c.nuro_2g || "要確認";
+
+  nuro_10g.value =
+    c.nuro_10g || "要確認";
+
+  ntt_area.value =
+    c.ntt_area || "東日本";
+
+  ntt_10g.value =
+    c.ntt_10g || "要確認";
+
+  check_date.value =
+    c.check_date || "";
+
+  area_memo.value =
+    c.area_memo || "";
+
+  memo.value =
+    c.memo || "";
+
+  scrollTo({
+    top:0,
+    behavior:"smooth"
   });
-
-  document.getElementById("summary").innerText =
-    `件数：${customers.length}件 / 今月成約：${monthlyClose}件`;
-}
-
-function getStatusClass(status){
-  if(status === "未対応") return "wait";
-  if(status === "LINE対応中") return "line";
-  if(status === "架電予定") return "call";
-  if(status === "成約") return "close";
-  return "wait";
-}
-
-function getRankClass(rank){
-  if(rank === "A") return "rankA";
-  if(rank === "B") return "rankB";
-  return "rankC";
 }
 
 async function deleteCustomer(id){
-  if(!confirm("削除しますか？")) return;
 
-  const { error } = await supabaseClient
-    .from("customers")
-    .delete()
-    .eq("id",id);
+  if(!confirm("削除しますか？"))
+    return;
+
+  const { error } =
+    await supabaseClient
+      .from("customers")
+      .delete()
+      .eq("id",id);
 
   if(error){
-    alert("削除エラー：" + error.message);
+
+    alert(error.message);
+
     return;
   }
 
   loadCustomers();
 }
 
-function csvEscape(value){
-  return `"${String(value || "").replace(/"/g,'""')}"`;
+function clearInputs(){
+
+  document
+    .querySelectorAll("input")
+    .forEach(i => {
+
+      if(
+        i.type !== "file"
+      ){
+        i.value = "";
+      }
+    });
+
+  editingId.value = "";
 }
 
 function exportCSV(){
-  let csv =
-  "名前,電話番号,推定キャリア,郵便番号,住所,担当者,BIGLOBE1G,BIGLOBE10G,NURO2G,NURO10G,NTT東西,NTT1G,NTT10G,確認日,エリアメモ,対応状況,ランク,顧客メモ\n";
 
-  customers.forEach(c=>{
-    csv += [
-      c.name,c.phone,c.carrier,c.zipcode,c.address,c.staff,
-      c.biglobe_1g,c.biglobe_10g,c.nuro_2g,c.nuro_10g,
-      c.ntt_area,c.ntt_1g,c.ntt_10g,c.check_date,c.area_memo,
-      c.status,c.rank,c.memo
-    ].map(csvEscape).join(",") + "\n";
+  let csv =
+    "名前,カナ,連絡先,住所\n";
+
+  customers.forEach(c => {
+
+    csv +=
+      `"${c.name}","${c.name_kana}","${c.mobile_phone}","${c.address}"\n`;
   });
 
-  const blob = new Blob(["\uFEFF" + csv],{type:"text/csv;charset=utf-8;"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const blob =
+    new Blob(
+      ["\uFEFF"+csv],
+      {type:"text/csv"}
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const a =
+    document.createElement("a");
+
   a.href = url;
-  a.download = "customers.csv";
+
+  a.download =
+    "customers.csv";
+
   a.click();
 }
 
-function parseCSVLine(line){
-  const result = [];
-  let current = "";
-  let inQuotes = false;
+async function bulkImportCustomers(){
 
-  for(let i=0;i<line.length;i++){
-    const char = line[i];
-
-    if(char === '"' && line[i+1] === '"'){
-      current += '"';
-      i++;
-    }else if(char === '"'){
-      inQuotes = !inQuotes;
-    }else if(char === "," && !inQuotes){
-      result.push(current);
-      current = "";
-    }else{
-      current += char;
-    }
-  }
-
-  result.push(current);
-  return result;
-}
-
-async function importCSV(){
-  const file = document.getElementById("csvFile").files[0];
+  const file =
+    document.getElementById("csvFile")
+      .files[0];
 
   if(!file){
-    alert("CSVファイルを選択してください");
+
+    alert("CSVを選択してください");
+
     return;
   }
 
-  const reader = new FileReader();
+  const text =
+    await file.text();
 
-  reader.onload = async function(e){
-    const lines = e.target.result.replace(/\r/g,"").split("\n").filter(line=>line.trim());
-    lines.shift();
+  const lines =
+    text.split("\n");
 
-    const rows = lines.map(line=>{
-      const cols = parseCSVLine(line);
-      const phone = cols[1] || "";
-      const address = cols[4] || "";
+  lines.shift();
 
-      return {
-        name:cols[0] || "",
-        phone:phone,
-        carrier:cols[2] || detectCarrier(phone),
-        zipcode:cleanZip(cols[3] || ""),
-        address:address,
-        staff:cols[5] || "",
-        biglobe_1g:cols[6] || "要確認",
-        biglobe_10g:cols[7] || "要確認",
-        nuro_2g:cols[8] || "要確認",
-        nuro_10g:cols[9] || "要確認",
-        ntt_area:cols[10] || detectNttAreaFromAddress(address),
-        ntt_1g:cols[11] || "要確認",
-        ntt_10g:cols[12] || "要確認",
-        check_date:cols[13] || null,
-        area_memo:cols[14] || "",
-        status:cols[15] || "未対応",
-        rank:cols[16] || "C",
-        memo:cols[17] || ""
-      };
+  const rows = [];
+
+  for(const line of lines){
+
+    if(!line.trim())
+      continue;
+
+    const cols =
+      line.split(",");
+
+    const address =
+      cols[6] || "";
+
+    rows.push({
+
+      name:cols[0] || "",
+
+      name_kana:cols[1] || "",
+
+      mobile_phone:cols[2] || "",
+
+      home_phone:cols[3] || "",
+
+      birthday:cols[4] || null,
+
+      zipcode:
+        cleanZip(cols[5]),
+
+      address,
+
+      open_date:
+        cols[7] || null,
+
+      carrier:
+        detectCarrier(cols[2]),
+
+      status:"未対応",
+
+      rank:"C",
+
+      biglobe_10g:
+        judge10G(address),
+
+      nuro_2g:
+        judgeNuro(address),
+
+      nuro_10g:
+        judgeNuro(address),
+
+      ntt_area:
+        detectNttArea(address),
+
+      ntt_10g:
+        judge10G(address)
     });
+  }
 
-    const { error } = await supabaseClient
-      .from("customers")
-      .insert(rows);
+  const unique = [];
+
+  const seen = new Set();
+
+  rows.forEach(r => {
+
+    const key =
+      r.zipcode + r.address;
+
+    if(!seen.has(key)){
+
+      seen.add(key);
+
+      unique.push(r);
+    }
+  });
+
+  const chunks = [];
+
+  for(let i=0;i<unique.length;i+=300){
+
+    chunks.push(
+      unique.slice(i,i+300)
+    );
+  }
+
+  for(const chunk of chunks){
+
+    const { error } =
+      await supabaseClient
+        .from("customers")
+        .insert(chunk);
 
     if(error){
-      alert("CSVインポートエラー：" + error.message);
+
+      alert(error.message);
+
       return;
     }
-
-    for(const row of rows){
-      await saveAreaJudgement(row);
-    }
-
-    alert("CSVインポート完了");
-    loadCustomers();
-  };
-
-  reader.readAsText(file,"UTF-8");
-}
-
-async function bulkJudgeAndSave(){
-  const file = document.getElementById("bulkJudgeCsv").files[0];
-
-  if(!file){
-    alert("CSVファイルを選択してください");
-    return;
   }
 
-  const reader = new FileReader();
+  alert(
+    `${unique.length}件インポート完了`
+  );
 
-  reader.onload = async function(e){
-    const text = e.target.result.replace(/\r/g,"");
-    const lines = text.split("\n").filter(line => line.trim());
-
-    let zips = [];
-
-    lines.forEach((line,index)=>{
-      const cols = parseCSVLine(line);
-
-      if(index === 0 && cols.join("").includes("郵便番号")) return;
-
-      const zip = cleanZip(cols[0] || cols[2] || "");
-
-      if(zip.length === 7) zips.push(zip);
-    });
-
-    zips = [...new Set(zips)];
-
-    const tbody = document.getElementById("bulkJudgeTable");
-    tbody.innerHTML = "";
-
-    document.getElementById("bulkProgress").innerText =
-      `判定開始：${zips.length}件`;
-
-    let count = 0;
-
-    for(const zip of zips){
-      count++;
-
-      document.getElementById("bulkProgress").innerText =
-        `${count} / ${zips.length} 件を処理中`;
-
-      const address = await getAddressFromZip(zip);
-      const nttArea = detectNttAreaFromAddress(address);
-      const ntt10g = judgeNtt10GCandidate(address);
-      const nuroJudge = judgeNuroCandidate(address);
-
-      const areaData = {
-        zipcode:zip,
-        address:address,
-        biglobe_1g:"要確認",
-        biglobe_10g:ntt10g,
-        nuro_2g:nuroJudge.nuro2g,
-        nuro_10g:nuroJudge.nuro10g,
-        ntt_area:nttArea,
-        ntt_1g:"要確認",
-        ntt_10g:ntt10g,
-        check_date:null,
-        area_memo:`${ntt10g} / ${nuroJudge.memo} / 自動仮判定`
-      };
-
-      await saveAreaJudgement(areaData);
-
-      tbody.innerHTML += `
-        <tr>
-          <td>${zip}</td>
-          <td>${address}</td>
-          <td>${nttArea}</td>
-          <td>${ntt10g}</td>
-          <td>${nuroJudge.nuro2g} / ${nuroJudge.nuro10g}</td>
-          <td>保存済み</td>
-        </tr>
-      `;
-
-      await sleep(300);
-    }
-
-    document.getElementById("bulkProgress").innerText =
-      `完了：${zips.length}件を仮判定してDB保存しました`;
-  };
-
-  reader.readAsText(file,"UTF-8");
+  loadCustomers();
 }
 
-function sleep(ms){
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 </script>
 
 </body>
