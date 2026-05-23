@@ -136,7 +136,22 @@ a{color:#2563eb;text-decoration:none;}
 
 <div class="card">
 <h2>検索・一覧</h2>
+
 <input id="search" placeholder="検索" oninput="currentPage=1; renderTable()">
+
+<br><br>
+
+<select id="carrierFilter" onchange="currentPage=1; renderTable()">
+<option value="">全キャリア表示</option>
+<option value="docomo">docomo系</option>
+<option value="au">au系</option>
+<option value="SoftBank">SoftBank系</option>
+<option value="楽天">楽天/MVNO系</option>
+<option value="IP電話">IP電話</option>
+<option value="固定電話">固定電話系</option>
+<option value="不明">不明</option>
+</select>
+
 <p id="summary">件数：0件</p>
 
 <div>
@@ -553,17 +568,25 @@ async function updateCustomer(){
 
 function getFilteredCustomers(){
   const keyword = document.getElementById("search").value || "";
+  const carrierFilter = document.getElementById("carrierFilter").value || "";
 
-  let filtered = customers.filter(c =>
-    (c.name || "").includes(keyword) ||
-    (c.name_kana || "").includes(keyword) ||
-    (c.mobile_phone || "").includes(keyword) ||
-    (c.home_phone || "").includes(keyword) ||
-    (c.carrier || "").includes(keyword) ||
-    detectCarrier(c.mobile_phone).includes(keyword) ||
-    (c.zipcode || "").includes(keyword) ||
-    (c.address || "").includes(keyword)
-  );
+  let filtered = customers.filter(c => {
+    const carrier = c.carrier || detectCarrier(c.mobile_phone);
+
+    const keywordMatch =
+      (c.name || "").includes(keyword) ||
+      (c.name_kana || "").includes(keyword) ||
+      (c.mobile_phone || "").includes(keyword) ||
+      (c.home_phone || "").includes(keyword) ||
+      (carrier || "").includes(keyword) ||
+      (c.zipcode || "").includes(keyword) ||
+      (c.address || "").includes(keyword);
+
+    const carrierMatch =
+      !carrierFilter || carrier.includes(carrierFilter);
+
+    return keywordMatch && carrierMatch;
+  });
 
   if(todayCallOnly){
     filtered = filtered.filter(c => isTodayCallTarget(c));
@@ -714,9 +737,9 @@ function clearInputs(){
 }
 
 function exportCSV(){
-  let csv = "お客様名（漢字）,お客様名（カナ）,連絡先,推定キャリア,固定電話番号,生年月日,郵便番号,住所,開通日,架電時期,スコア,優先度\n";
+  let csv = "お客様名（漢字）,お客様名（カナ）,連絡先,推定キャリア,固定電話番号,生年月日,郵便番号,住所,開通日,架電時期,スコア,優先度,BIGLOBE10G,NURO2G,NURO10G,NTT東西,NTT10G,対応,ランク,メモ\n";
 
-  customers.forEach(c=>{
+  getFilteredCustomers().forEach(c=>{
     const carrier = c.carrier || detectCarrier(c.mobile_phone);
 
     csv += [
@@ -731,7 +754,15 @@ function exportCSV(){
       c.open_date,
       getCallTiming(c.open_date),
       getScore(c),
-      getPriority(c)
+      getPriority(c),
+      c.biglobe_10g,
+      c.nuro_2g,
+      c.nuro_10g,
+      c.ntt_area,
+      c.ntt_10g,
+      c.status,
+      c.rank,
+      c.memo
     ].map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(",") + "\n";
   });
 
@@ -739,7 +770,7 @@ function exportCSV(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "customers.csv";
+  a.download = "filtered_customers.csv";
   a.click();
 }
 
