@@ -12,14 +12,22 @@ body{font-family:sans-serif;background:#f5f5f5;margin:0;padding:20px;}
 .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
 input,select{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;}
 button{padding:10px 16px;border:none;border-radius:8px;cursor:pointer;margin:4px;}
-.add{background:#0070f3;color:white}.update{background:#f59e0b;color:white}.csv{background:#16a34a;color:white}
-.import{background:#9333ea;color:white}.delete{background:#ef4444;color:white}.check{background:#2563eb;color:white}
-.logout{background:#111827;color:white;float:right}.clear{background:#6b7280;color:white}
+.add{background:#0070f3;color:white}
+.update{background:#f59e0b;color:white}
+.csv{background:#16a34a;color:white}
+.import{background:#9333ea;color:white}
+.delete{background:#ef4444;color:white}
+.check{background:#2563eb;color:white}
+.logout{background:#111827;color:white;float:right}
+.clear{background:#6b7280;color:white}
 table{width:100%;border-collapse:collapse;background:white;}
 th,td{border:1px solid #ddd;padding:8px;font-size:13px;text-align:left;vertical-align:top;}
-th{background:#eee}.warning{color:#dc2626;font-weight:bold}.success{color:#16a34a;font-weight:bold}
+th{background:#eee}
+.warning{color:#dc2626;font-weight:bold}
+.success{color:#16a34a;font-weight:bold}
 .login-box{max-width:400px;margin:80px auto;background:white;padding:30px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);}
-.hidden{display:none}a{color:#2563eb;text-decoration:none;}
+.hidden{display:none}
+a{color:#2563eb;text-decoration:none;}
 </style>
 </head>
 
@@ -128,16 +136,40 @@ th{background:#eee}.warning{color:#dc2626;font-weight:bold}.success{color:#16a34
 
 <div class="card">
 <h2>検索・一覧</h2>
-<input id="search" placeholder="検索" oninput="renderTable()">
+<input id="search" placeholder="検索" oninput="currentPage=1; renderTable()">
 <p id="summary">件数：0件</p>
+
+<div>
+<button class="check" onclick="prevPage()">前へ</button>
+<span id="pageInfo">1 / 1</span>
+<button class="check" onclick="nextPage()">次へ</button>
+</div>
+
+<br>
 
 <table>
 <thead>
 <tr>
-<th>名前</th><th>カナ</th><th>連絡先</th><th>固定電話</th><th>生年月日</th>
-<th>郵便番号</th><th>住所</th><th>開通日</th><th>架電時期</th><th>スコア</th><th>優先度</th>
-<th>BIGLOBE10G</th><th>NURO2G</th><th>NURO10G</th><th>NTT東西</th><th>NTT10G</th>
-<th>対応</th><th>ランク</th><th>メモ</th><th>操作</th>
+<th>名前</th>
+<th>カナ</th>
+<th>連絡先</th>
+<th>固定電話</th>
+<th>生年月日</th>
+<th>郵便番号</th>
+<th>住所</th>
+<th>開通日</th>
+<th>架電時期</th>
+<th>スコア</th>
+<th>優先度</th>
+<th>BIGLOBE10G</th>
+<th>NURO2G</th>
+<th>NURO10G</th>
+<th>NTT東西</th>
+<th>NTT10G</th>
+<th>対応</th>
+<th>ランク</th>
+<th>メモ</th>
+<th>操作</th>
 </tr>
 </thead>
 <tbody id="customerTable"></tbody>
@@ -152,6 +184,8 @@ const supabaseKey = "sb_publishable_k5cj6-sQ7bV0CGV24_Hgcw_eld_RV2u";
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 let customers = [];
+let currentPage = 1;
+const pageSize = 100;
 
 async function login(){
   const email = document.getElementById("loginId").value.trim();
@@ -218,6 +252,7 @@ async function loadCustomers(){
   }
 
   customers = allData;
+  currentPage = 1;
   renderTable();
 }
 
@@ -236,34 +271,59 @@ function detectCarrier(phone){
 }
 
 function detectNttArea(address){
-  const west = ["富山県","石川県","福井県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+  const west = [
+    "富山県","石川県","福井県","岐阜県","静岡県","愛知県","三重県",
+    "滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県",
+    "鳥取県","島根県","岡山県","広島県","山口県",
+    "徳島県","香川県","愛媛県","高知県",
+    "福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"
+  ];
   return west.some(p=>address.includes(p)) ? "西日本" : "東日本";
 }
 
 function judge10G(address){
   if(!address) return "要確認";
-  const strong = ["東京都","大阪市","横浜市","川崎市","名古屋市","福岡市","札幌市中央区","さいたま市","千葉市","京都市","神戸市"];
-  const candidate = ["札幌市","仙台市","新潟市","静岡市","浜松市","広島市","北九州市","熊本市"];
+  const strong = [
+    "東京都","大阪市","横浜市","川崎市","名古屋市","福岡市",
+    "札幌市中央区","さいたま市","千葉市","京都市","神戸市"
+  ];
+  const candidate = [
+    "札幌市","仙台市","新潟市","静岡市","浜松市","広島市","北九州市","熊本市"
+  ];
+
   if(strong.some(a=>address.includes(a))) return "◎ 10G濃厚";
   if(candidate.some(a=>address.includes(a))) return "○ 10G候補";
   return "要確認";
 }
 
 function judgeNuro2G(address){
-  const list = ["東京都","神奈川県","埼玉県","千葉県","大阪府","兵庫県","京都府","奈良県","愛知県","静岡県","岐阜県","三重県","福岡県","佐賀県","北海道札幌市"];
+  const list = [
+    "東京都","神奈川県","埼玉県","千葉県",
+    "大阪府","兵庫県","京都府","奈良県",
+    "愛知県","静岡県","岐阜県","三重県",
+    "福岡県","佐賀県","北海道札幌市"
+  ];
   return list.some(a=>address.includes(a)) ? "○ NURO候補" : "要確認";
 }
 
 function judgeNuro10G(address){
-  const list = ["東京都","神奈川県","埼玉県","千葉県","大阪市","名古屋市","福岡市","札幌市中央区"];
+  const list = [
+    "東京都","神奈川県","埼玉県","千葉県",
+    "大阪市","名古屋市","福岡市","札幌市中央区"
+  ];
   return list.some(a=>address.includes(a)) ? "○ NURO10G候補" : "要確認";
 }
 
 function getCallTiming(openDate){
   if(!openDate) return "要確認";
+
   const d = new Date(openDate);
   const now = new Date();
-  const months = (now.getFullYear()-d.getFullYear())*12 + now.getMonth()-d.getMonth();
+
+  const months =
+    (now.getFullYear()-d.getFullYear())*12 +
+    now.getMonth()-d.getMonth();
+
   if(months >= 24) return "今すぐ架電";
   if(months >= 18) return "優先架電";
   if(months >= 12) return "確認候補";
@@ -272,18 +332,29 @@ function getCallTiming(openDate){
 
 function getScore(c){
   let score = 0;
-  const text = [c.biglobe_10g,c.nuro_2g,c.nuro_10g,c.ntt_10g].join(" ");
+  const text = [
+    c.biglobe_10g,
+    c.nuro_2g,
+    c.nuro_10g,
+    c.ntt_10g
+  ].join(" ");
+
   if(text.includes("◎")) score += 40;
   if(text.includes("○")) score += 25;
+
   if(getCallTiming(c.open_date) === "今すぐ架電") score += 25;
   if(getCallTiming(c.open_date) === "優先架電") score += 15;
+
   if(c.rank === "A") score += 20;
+
   if(c.status === "成約" || c.status === "失注") score -= 50;
+
   return score;
 }
 
 function getPriority(c){
   const score = getScore(c);
+
   if(score >= 70) return "S 最優先";
   if(score >= 50) return "A 優先";
   if(score >= 30) return "B 通常";
@@ -295,11 +366,13 @@ async function handleZipInput(){
   if(zip.length !== 7) return;
 
   const addr = await getAddressFromZip(zip);
+
   if(addr && !document.getElementById("address").value){
     document.getElementById("address").value = addr;
   }
 
   const address = document.getElementById("address").value;
+
   document.getElementById("ntt_area").value = detectNttArea(address);
   document.getElementById("biglobe_10g").value = judge10G(address);
   document.getElementById("ntt_10g").value = judge10G(address);
@@ -311,11 +384,13 @@ async function getAddressFromZip(zip){
   try{
     const res = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${zip}`);
     const json = await res.json();
+
     if(json.results && json.results.length > 0){
       const a = json.results[0];
       return a.address1 + a.address2 + a.address3;
     }
   }catch(e){}
+
   return "";
 }
 
@@ -350,7 +425,9 @@ function getFormData(){
 async function saveCustomer(){
   const data = getFormData();
 
-  const { error } = await supabaseClient.from("customers").insert([data]);
+  const { error } = await supabaseClient
+    .from("customers")
+    .insert([data]);
 
   if(error){
     alert("保存エラー：" + error.message);
@@ -364,6 +441,7 @@ async function saveCustomer(){
 
 async function updateCustomer(){
   const id = document.getElementById("editingId").value;
+
   if(!id){
     alert("編集する顧客を選んでください");
     return;
@@ -371,7 +449,10 @@ async function updateCustomer(){
 
   const data = getFormData();
 
-  const { error } = await supabaseClient.from("customers").update(data).eq("id",id);
+  const { error } = await supabaseClient
+    .from("customers")
+    .update(data)
+    .eq("id",id);
 
   if(error){
     alert("更新エラー：" + error.message);
@@ -383,12 +464,10 @@ async function updateCustomer(){
   loadCustomers();
 }
 
-function renderTable(){
+function getFilteredCustomers(){
   const keyword = document.getElementById("search").value || "";
-  const tbody = document.getElementById("customerTable");
-  tbody.innerHTML = "";
 
-  const filtered = customers.filter(c =>
+  return customers.filter(c =>
     (c.name || "").includes(keyword) ||
     (c.name_kana || "").includes(keyword) ||
     (c.mobile_phone || "").includes(keyword) ||
@@ -396,8 +475,25 @@ function renderTable(){
     (c.zipcode || "").includes(keyword) ||
     (c.address || "").includes(keyword)
   );
+}
 
-  filtered.forEach(c=>{
+function renderTable(){
+  const tbody = document.getElementById("customerTable");
+  tbody.innerHTML = "";
+
+  const filtered = getFilteredCustomers();
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  if(currentPage > totalPages){
+    currentPage = totalPages;
+  }
+
+  const start = (currentPage - 1) * pageSize;
+  const end = start + pageSize;
+  const pageItems = filtered.slice(start, end);
+
+  pageItems.forEach(c=>{
     tbody.innerHTML += `
     <tr>
       <td>${c.name || ""}</td>
@@ -426,7 +522,28 @@ function renderTable(){
     </tr>`;
   });
 
-  document.getElementById("summary").innerText = `件数：${customers.length}件 / 表示：${filtered.length}件`;
+  document.getElementById("summary").innerText =
+    `件数：${customers.length}件 / 検索結果：${filtered.length}件 / 表示：${pageItems.length}件`;
+
+  document.getElementById("pageInfo").innerText =
+    `${currentPage} / ${totalPages}`;
+}
+
+function nextPage(){
+  const filtered = getFilteredCustomers();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+
+  if(currentPage < totalPages){
+    currentPage++;
+    renderTable();
+  }
+}
+
+function prevPage(){
+  if(currentPage > 1){
+    currentPage--;
+    renderTable();
+  }
 }
 
 function editCustomer(id){
@@ -460,7 +577,10 @@ function editCustomer(id){
 async function deleteCustomer(id){
   if(!confirm("削除しますか？")) return;
 
-  const { error } = await supabaseClient.from("customers").delete().eq("id",id);
+  const { error } = await supabaseClient
+    .from("customers")
+    .delete()
+    .eq("id",id);
 
   if(error){
     alert("削除エラー：" + error.message);
@@ -472,11 +592,13 @@ async function deleteCustomer(id){
 
 function clearInputs(){
   document.getElementById("editingId").value = "";
+
   document.querySelectorAll("input").forEach(input=>{
     if(input.id !== "search" && input.type !== "file"){
       input.value = "";
     }
   });
+
   document.getElementById("status").value = "未対応";
   document.getElementById("rank").value = "A";
 }
@@ -486,8 +608,17 @@ function exportCSV(){
 
   customers.forEach(c=>{
     csv += [
-      c.name,c.name_kana,c.mobile_phone,c.home_phone,c.birthday,c.zipcode,c.address,c.open_date,
-      getCallTiming(c.open_date),getScore(c),getPriority(c)
+      c.name,
+      c.name_kana,
+      c.mobile_phone,
+      c.home_phone,
+      c.birthday,
+      c.zipcode,
+      c.address,
+      c.open_date,
+      getCallTiming(c.open_date),
+      getScore(c),
+      getPriority(c)
     ].map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(",") + "\n";
   });
 
@@ -611,7 +742,9 @@ async function bulkImportCustomers(){
 
   for(let i=0;i<unique.length;i+=300){
     const chunk = unique.slice(i,i+300);
-    const { error } = await supabaseClient.from("customers").insert(chunk);
+    const { error } = await supabaseClient
+      .from("customers")
+      .insert(chunk);
 
     if(error){
       alert("CSV保存エラー：" + error.message);
