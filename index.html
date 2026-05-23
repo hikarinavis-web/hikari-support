@@ -112,7 +112,11 @@ a{color:#2563eb;text-decoration:none;}
 </select>
 
 <input id="check_date" type="date">
+<input id="last_contact_date" type="date">
+<input id="next_contact_date" type="date">
+<input id="call_count" type="number" placeholder="架電回数">
 <input id="area_memo" placeholder="エリア判定メモ">
+<input id="history_memo" placeholder="対応履歴メモ">
 <input id="memo" placeholder="顧客メモ">
 </div>
 
@@ -190,6 +194,10 @@ a{color:#2563eb;text-decoration:none;}
 <th>NTT東西</th>
 <th>NTT10G</th>
 <th>対応</th>
+<th>最終対応</th>
+<th>次回連絡</th>
+<th>架電回数</th>
+<th>履歴</th>
 <th>ランク</th>
 <th>メモ</th>
 <th>操作</th>
@@ -519,7 +527,11 @@ function getFormData(){
     ntt_area:document.getElementById("ntt_area").value,
     ntt_10g:document.getElementById("ntt_10g").value,
     check_date:document.getElementById("check_date").value || null,
+    last_contact_date:document.getElementById("last_contact_date").value || null,
+    next_contact_date:document.getElementById("next_contact_date").value || null,
+    call_count:Number(document.getElementById("call_count").value || 0),
     area_memo:document.getElementById("area_memo").value,
+    history_memo:document.getElementById("history_memo").value,
     memo:document.getElementById("memo").value
   };
 }
@@ -580,7 +592,9 @@ function getFilteredCustomers(){
       (c.home_phone || "").includes(keyword) ||
       (carrier || "").includes(keyword) ||
       (c.zipcode || "").includes(keyword) ||
-      (c.address || "").includes(keyword);
+      (c.address || "").includes(keyword) ||
+      (c.history_memo || "").includes(keyword) ||
+      (c.memo || "").includes(keyword);
 
     const carrierMatch =
       !carrierFilter || carrier.includes(carrierFilter);
@@ -634,6 +648,10 @@ function renderTable(){
       <td>${c.ntt_area || ""}</td>
       <td>${c.ntt_10g || ""}</td>
       <td>${c.status || ""}</td>
+      <td>${c.last_contact_date || ""}</td>
+      <td>${c.next_contact_date || ""}</td>
+      <td>${c.call_count || 0}</td>
+      <td>${c.history_memo || ""}</td>
       <td>${c.rank || ""}</td>
       <td>${c.memo || ""}</td>
       <td>
@@ -701,7 +719,11 @@ function editCustomer(id){
   document.getElementById("ntt_area").value = c.ntt_area || "東日本";
   document.getElementById("ntt_10g").value = c.ntt_10g || "要確認";
   document.getElementById("check_date").value = c.check_date || "";
+  document.getElementById("last_contact_date").value = c.last_contact_date || "";
+  document.getElementById("next_contact_date").value = c.next_contact_date || "";
+  document.getElementById("call_count").value = c.call_count || 0;
   document.getElementById("area_memo").value = c.area_memo || "";
+  document.getElementById("history_memo").value = c.history_memo || "";
   document.getElementById("memo").value = c.memo || "";
 
   window.scrollTo({top:0,behavior:"smooth"});
@@ -737,7 +759,7 @@ function clearInputs(){
 }
 
 function exportCSV(){
-  let csv = "お客様名（漢字）,お客様名（カナ）,連絡先,推定キャリア,固定電話番号,生年月日,郵便番号,住所,開通日,架電時期,スコア,優先度,BIGLOBE10G,NURO2G,NURO10G,NTT東西,NTT10G,対応,ランク,メモ\n";
+  let csv = "お客様名（漢字）,お客様名（カナ）,連絡先,推定キャリア,固定電話番号,生年月日,郵便番号,住所,開通日,架電時期,スコア,優先度,BIGLOBE10G,NURO2G,NURO10G,NTT東西,NTT10G,対応,最終対応,次回連絡,架電回数,履歴,ランク,メモ\n";
 
   getFilteredCustomers().forEach(c=>{
     const carrier = c.carrier || detectCarrier(c.mobile_phone);
@@ -761,6 +783,10 @@ function exportCSV(){
       c.ntt_area,
       c.ntt_10g,
       c.status,
+      c.last_contact_date,
+      c.next_contact_date,
+      c.call_count,
+      c.history_memo,
       c.rank,
       c.memo
     ].map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(",") + "\n";
@@ -866,7 +892,11 @@ async function bulkImportCustomers(){
       ntt_area:detectNttArea(addr),
       ntt_10g:judge10G(addr),
       check_date:null,
+      last_contact_date:null,
+      next_contact_date:null,
+      call_count:0,
       area_memo:"CSV一括仮判定",
+      history_memo:"",
       memo:""
     };
 
